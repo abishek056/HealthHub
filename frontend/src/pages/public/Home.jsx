@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { Calendar, User, Building2 } from 'lucide-react';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -22,10 +25,42 @@ const Home = () => {
                 HealthHub
               </span>
             </div>
-            <nav className="hidden md:flex space-x-8">
-              <Link to="/hospitals" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">Find Hospital</Link>
-              <a href="#services" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">Services</a>
-              <Link to="/login" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">Partner Login</Link>
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link to="/hospitals" className="text-gray-600 hover:text-primary-600 font-medium transition-colors text-sm">
+                Find Hospital
+              </Link>
+              <Link
+                to="/book-appointment"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-primary-50 text-primary-700 hover:bg-primary-100 border border-primary-200 transition-colors"
+              >
+                <Calendar className="w-3.5 h-3.5 text-primary-600" />
+                Book Appointment
+              </Link>
+              <a href="#services" className="text-gray-600 hover:text-primary-600 font-medium transition-colors text-sm">
+                Services
+              </a>
+
+              {isAuthenticated ? (
+                <Link
+                  to={user?.role === 'super_admin' ? '/admin/dashboard' : user?.role === 'hospital_admin' || user?.role === 'hospital_staff' ? '/hospital/dashboard' : '/user/dashboard'}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-sm"
+                >
+                  <User className="w-3.5 h-3.5 text-primary-400" />
+                  {user?.name?.split(' ')[0] || 'My Portal'}
+                </Link>
+              ) : (
+                <div className="flex items-center space-x-3 text-sm">
+                  <Link to="/login" className="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-full bg-primary-600 text-white hover:bg-primary-700 transition-colors shadow-sm"
+                  >
+                    Patient Register
+                  </Link>
+                </div>
+              )}
             </nav>
             <div className="md:hidden">
                {/* Mobile menu button could go here */}
@@ -57,6 +92,24 @@ const Home = () => {
                     Search
                   </button>
                 </form>
+
+                {/* Direct Action Links */}
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <Link
+                    to="/book-appointment"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold shadow-md transition-all hover:shadow-lg"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    Book Hospital Appointment & OPD Token
+                  </Link>
+                  <Link
+                    to="/hospitals"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium transition-colors"
+                  >
+                    <Building2 className="w-3.5 h-3.5 text-gray-500" />
+                    Browse All Hospitals
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

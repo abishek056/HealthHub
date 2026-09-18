@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\EmergencyController;
 use App\Http\Controllers\Api\HospitalController;
 use App\Http\Controllers\Api\OPDQueueController;
 use App\Http\Controllers\Api\PatientRecordController;
+use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\HospitalStaffController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\HospitalManagementController;
 use App\Http\Controllers\Api\Admin\UserManagementController;
@@ -24,14 +26,15 @@ Route::prefix('auth')->group(function () {
 
     // Public
     Route::post('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/register', [AuthController::class, 'registerPatient']);
 
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
 
-        // Only super_admin can register new users
-        Route::post('/register', [AuthController::class, 'register'])
+        // Only super_admin can register privileged staff/admins
+        Route::post('/admin-register', [AuthController::class, 'register'])
             ->middleware('role:super_admin');
     });
 });
@@ -98,6 +101,17 @@ Route::prefix('emergency')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Appointment Booking Routes (Patient & Public)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/appointments', [AppointmentController::class, 'index']);
+Route::post('/appointments', [AppointmentController::class, 'store']);
+Route::get('/appointments/{id}', [AppointmentController::class, 'show']);
+Route::put('/appointments/{id}/cancel', [AppointmentController::class, 'cancel']);
+
+/*
+|--------------------------------------------------------------------------
 | Protected routes (hospital_staff only + tenant isolation)
 |--------------------------------------------------------------------------
 |
@@ -130,6 +144,14 @@ Route::middleware(['auth:sanctum', 'role:hospital_staff,hospital_admin,super_adm
         Route::post('/patient-records', [PatientRecordController::class, 'store']);
         Route::put('/patient-records/{id}', [PatientRecordController::class, 'update']);
         Route::delete('/patient-records/{id}', [PatientRecordController::class, 'destroy']);
+
+        // Hospital Staff Management (hospital_admin & super_admin only)
+        Route::middleware('role:hospital_admin,super_admin')->group(function () {
+            Route::get('/hospitals/{id}/staff', [HospitalStaffController::class, 'index']);
+            Route::post('/hospitals/{id}/staff', [HospitalStaffController::class, 'store']);
+            Route::put('/hospitals/{id}/staff/{userId}', [HospitalStaffController::class, 'update']);
+            Route::delete('/hospitals/{id}/staff/{userId}', [HospitalStaffController::class, 'destroy']);
+        });
     });
 
 /*
@@ -171,9 +193,12 @@ Route::prefix('admin')
     ->middleware(['auth:sanctum', 'role:super_admin'])
     ->group(function () {
 
-        // Dashboard
-        Route::get('/stats',                   [DashboardController::class, 'stats']);
-        Route::get('/hospitals/occupancy',     [DashboardController::class, 'hospitalsByOccupancy']);
+        // Dashboard & Analytics
+        Route::get('/stats',                       [DashboardController::class, 'stats']);
+        Route::get('/hospitals/occupancy',         [DashboardController::class, 'hospitalsByOccupancy']);
+        Route::get('/analytics/bed-occupancy',     [DashboardController::class, 'bedOccupancyTrend']);
+        Route::get('/analytics/ambulance-response',[DashboardController::class, 'ambulanceResponseTimes']);
+        Route::get('/analytics/opd-wait-times',    [DashboardController::class, 'opdWaitTimes']);
 
         // Hospital management
         Route::get('/hospitals',               [HospitalManagementController::class, 'index']);

@@ -46,6 +46,42 @@ class AuthController extends Controller
     }
 
     /**
+     * Public registration for normal users / patients
+     */
+    public function registerPatient(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'phone'    => 'nullable|string|max:25',
+        ]);
+
+        $user = User::create([
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role'     => 'patient',
+            'phone'    => $validated['phone'] ?? null,
+        ]);
+
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        return response()->json([
+            'message'    => 'Account created successfully',
+            'token'      => $token,
+            'token_type' => 'Bearer',
+            'user'       => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email,
+                'role'  => $user->role,
+                'phone' => $user->phone,
+            ],
+        ], 201);
+    }
+
+    /**
      * Register new user (super_admin only)
      */
     public function register(Request $request): JsonResponse

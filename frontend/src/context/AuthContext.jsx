@@ -107,6 +107,39 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async (name, email, password, phone = '') => {
+    try {
+      const response = await api.post('/auth/register', {
+        name,
+        email,
+        password,
+        phone,
+      });
+
+      const { token: newToken, user: userData } = response.data;
+
+      if (!newToken || !userData) {
+        throw new Error('Invalid response from server');
+      }
+
+      setToken(newToken);
+      setUser(userData);
+      setRole(userData.role);
+      setIsAuthenticated(true);
+
+      localStorage.setItem('auth_token', newToken);
+      localStorage.setItem('auth_user', JSON.stringify(userData));
+
+      toast.success('Account created successfully! Welcome to HealthHub.');
+      return userData;
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || 'Registration failed. Please check your details.'
+      );
+      throw error;
+    }
+  };
+
   const value = {
     user,
     token,
@@ -114,6 +147,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     isLoading,
     login,
+    register,
     logout,
     checkAuth,
   };

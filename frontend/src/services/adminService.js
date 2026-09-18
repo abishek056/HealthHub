@@ -75,6 +75,27 @@ export const deletePatientRecord = async (id) => {
   return response.data;
 };
 
+// ── Hospital Staff Management (Tenant Scoped) ────────────────────────
+export const getHospitalStaff = async (hospitalId, params = {}) => {
+  const response = await api.get(`/hospitals/${hospitalId}/staff`, { params });
+  return response.data;
+};
+
+export const createHospitalStaff = async (hospitalId, data) => {
+  const response = await api.post(`/hospitals/${hospitalId}/staff`, data);
+  return response.data;
+};
+
+export const updateHospitalStaff = async (hospitalId, userId, data) => {
+  const response = await api.put(`/hospitals/${hospitalId}/staff/${userId}`, data);
+  return response.data;
+};
+
+export const deleteHospitalStaff = async (hospitalId, userId) => {
+  const response = await api.delete(`/hospitals/${hospitalId}/staff/${userId}`);
+  return response.data;
+};
+
 export default {
   getHospitalDetails,
   getBeds,
@@ -89,4 +110,8 @@ export default {
   createPatientRecord,
   updatePatientRecord,
   deletePatientRecord,
+  getHospitalStaff,
+  createHospitalStaff,
+  updateHospitalStaff,
+  deleteHospitalStaff,
 };
