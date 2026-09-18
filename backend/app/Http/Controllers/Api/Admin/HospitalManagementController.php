@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CreateHospitalRequest;
 use App\Http\Requests\Admin\UpdateHospitalRequest;
 use App\Http\Resources\Admin\AdminHospitalResource;
+use App\Models\Appointment;
 use App\Models\Hospital;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 class HospitalManagementController extends Controller
 {
@@ -117,21 +119,37 @@ class HospitalManagementController extends Controller
 
     /**
      * DELETE /api/admin/hospitals/{id}
-     * Soft-delete (or hard-delete) a hospital.
+     * Permanently delete a hospital and cascade-delete all associated resources.
      */
     public function destroy(int $id): JsonResponse
     {
         $hospital = Hospital::findOrFail($id);
 
-        // Prevent deleting if it still has active staff
-        if ($hospital->users()->where('is_active', true)->exists()) {
-            return response()->json([
-                'message' => 'Cannot delete a hospital with active staff. Deactivate staff first.',
-            ], 422);
-        }
+        DB::transaction(function () use ($hospital) {
+            // 1. Delete patient records associated with this hospital
+            $hospital->patientRecords()->delete();
 
-        $hospital->delete();
+            // 2. Delete appointments for this hospital
+            $hospital->appointments()->delete();
 
-        return response()->json(['message' => 'Hospital deleted successfully.']);
+            // 3. Delete hospital staff and admin user accounts linked to this hospital
+            $hospital->users()
+                ->whereIn('role', ['hospital_admin', 'hospital_staff'])
+                ->delete();
+
+            // 4. Detach any remaining linked users (set hospital_id to null)
+            $hospital->users()->update(['hospital_id' => null]);
+
+            // 5. Delete all operational data (beds, ambulances, OPD queues, blood banks)
+            $hospital->beds()->delete();
+            $hospital->ambulances()->delete();
+            $hospital->opdQueues()->delete();
+            $hospital->bloodBanks()->delete();
+
+            // 6. Delete the hospital itself
+            $hospital->delete();
+        });
+
+        return response()->json(['message' => 'Hospital and all associated data deleted successfully.']);
     }
 }

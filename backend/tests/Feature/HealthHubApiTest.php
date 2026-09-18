@@ -64,4 +64,70 @@ class HealthHubApiTest extends TestCase
                  ->assertJsonPath('success', true)
                  ->assertJsonPath('data.hospital.has_blood_group', true);
     }
+
+    public function test_super_admin_can_delete_hospital_with_all_associated_data(): void
+    {
+        $admin = User::factory()->superAdmin()->create();
+
+        $hospital = Hospital::factory()->create(['name' => 'Hospital To Delete']);
+
+        // Attach related records
+        $staff = User::factory()->create([
+            'role' => 'hospital_admin',
+            'hospital_id' => $hospital->id,
+        ]);
+
+        $hospital->beds()->create([
+            'ward_type' => 'ICU',
+            'total_beds' => 10,
+            'available_beds' => 5,
+        ]);
+
+        $hospital->ambulances()->create([
+            'driver_name' => 'Driver One',
+            'vehicle_number' => 'BA-9999',
+            'phone' => '9800000000',
+        ]);
+
+        $hospital->opdQueues()->create([
+            'department' => 'Emergency',
+        ]);
+
+        $hospital->bloodBanks()->create([
+            'blood_group' => 'A+',
+            'units_available' => 4,
+        ]);
+
+        $hospital->patientRecords()->create([
+            'patient_name' => 'Patient X',
+            'age' => 40,
+            'gender' => 'male',
+            'created_by' => $staff->id,
+        ]);
+
+        $hospital->appointments()->create([
+            'patient_name' => 'Appt Person',
+            'patient_phone' => '9811111111',
+            'department' => 'General',
+            'appointment_date' => now()->toDateString(),
+            'time_slot' => '09:00 AM',
+            'token_number' => 'TOK-TEST-DEL-1',
+            'status' => 'confirmed',
+        ]);
+
+        $response = $this->actingAs($admin)
+                         ->deleteJson("/api/admin/hospitals/{$hospital->id}");
+
+        $response->assertStatus(200)
+                 ->assertJson(['message' => 'Hospital and all associated data deleted successfully.']);
+
+        $this->assertDatabaseMissing('hospitals', ['id' => $hospital->id]);
+        $this->assertDatabaseMissing('users', ['id' => $staff->id]);
+        $this->assertDatabaseMissing('beds', ['hospital_id' => $hospital->id]);
+        $this->assertDatabaseMissing('ambulances', ['hospital_id' => $hospital->id]);
+        $this->assertDatabaseMissing('opd_queues', ['hospital_id' => $hospital->id]);
+        $this->assertDatabaseMissing('blood_banks', ['hospital_id' => $hospital->id]);
+        $this->assertDatabaseMissing('patient_records', ['hospital_id' => $hospital->id]);
+        $this->assertDatabaseMissing('appointments', ['hospital_id' => $hospital->id]);
+    }
 }

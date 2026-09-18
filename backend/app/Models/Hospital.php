@@ -57,6 +57,11 @@ class Hospital extends Model
         return $this->hasMany(PatientRecord::class);
     }
 
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
