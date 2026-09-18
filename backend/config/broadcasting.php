@@ -31,20 +31,33 @@ return [
     'connections' => [
 
         'reverb' => [
-            'driver' => 'reverb',
-            'key' => env('REVERB_APP_KEY'),
-            'secret' => env('REVERB_APP_SECRET'),
-            'app_id' => env('REVERB_APP_ID'),
+            'driver'  => 'reverb',
+            'key'     => env('REVERB_APP_KEY'),
+            'secret'  => env('REVERB_APP_SECRET'),
+            'app_id'  => env('REVERB_APP_ID'),
+
+            // Client-side connection (used by Laravel when publishing events)
             'options' => [
-                'host' => env('REVERB_HOST'),
-                'port' => env('REVERB_PORT', 443),
-                'scheme' => env('REVERB_SCHEME', 'https'),
-                'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
+                'host'   => env('REVERB_HOST', '0.0.0.0'),
+                'port'   => env('REVERB_PORT', 8080),
+                'scheme' => env('REVERB_SCHEME', 'http'),
+                'useTLS' => env('REVERB_SCHEME', 'http') === 'https',
             ],
+
+            // Reverb server process settings (used by `php artisan reverb:start`)
+            'server' => [
+                'host' => env('REVERB_SERVER_HOST', '0.0.0.0'),
+                'port' => env('REVERB_SERVER_PORT', 8080),
+                'options' => [
+                    'tls' => [],
+                ],
+            ],
+
             'client_options' => [
                 // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
             ],
         ],
+
 
         'pusher' => [
             'driver' => 'pusher',

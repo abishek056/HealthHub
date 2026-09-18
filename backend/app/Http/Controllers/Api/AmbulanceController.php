@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\AmbulanceLocationUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Ambulance;
 use App\Models\Hospital;
@@ -111,8 +112,15 @@ class AmbulanceController extends Controller
 
         $ambulance->update($validated);
 
+        // 🔴 Broadcast live location to all connected clients
+        try {
+            broadcast(new AmbulanceLocationUpdated($ambulance))->toOthers();
+        } catch (\Throwable) {
+            // Fail gracefully if Reverb is not running
+        }
+
         return response()->json([
-            'message' => 'Ambulance location updated successfully.',
+            'message'   => 'Ambulance location updated successfully.',
             'ambulance' => self::formatAmbulance($ambulance),
         ]);
     }

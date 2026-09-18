@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\BedAvailabilityUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Bed;
 use App\Models\Hospital;
@@ -78,6 +79,13 @@ class BedController extends Controller
         $bed->available_beds = $validated['available_beds'];
         $bed->last_updated = now();
         $bed->save();
+
+        // 🔴 Broadcast real-time update to all connected clients
+        try {
+            broadcast(new BedAvailabilityUpdated($bed))->toOthers();
+        } catch (\Throwable) {
+            // Fail gracefully if Reverb is not running
+        }
 
         return response()->json([
             'message' => 'Bed availability updated successfully.',
