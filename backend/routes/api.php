@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\BloodDonorController;
 use App\Http\Controllers\Api\EmergencyController;
 use App\Http\Controllers\Api\HospitalController;
 use App\Http\Controllers\Api\OPDQueueController;
+use App\Http\Controllers\Api\PatientRecordController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\HospitalManagementController;
 use App\Http\Controllers\Api\Admin\UserManagementController;
@@ -122,6 +123,13 @@ Route::middleware(['auth:sanctum', 'role:hospital_staff,hospital_admin,super_adm
 
         // Blood Bank stock update
         Route::put('/blood-banks/{id}', [BloodBankController::class, 'update']);
+
+        // Patient Records Management (tenant-isolated)
+        Route::get('/patient-records', [PatientRecordController::class, 'index']);
+        Route::get('/patient-records/{id}', [PatientRecordController::class, 'show']);
+        Route::post('/patient-records', [PatientRecordController::class, 'store']);
+        Route::put('/patient-records/{id}', [PatientRecordController::class, 'update']);
+        Route::delete('/patient-records/{id}', [PatientRecordController::class, 'destroy']);
     });
 
 /*
