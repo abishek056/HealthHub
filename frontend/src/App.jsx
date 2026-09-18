@@ -7,6 +7,7 @@ import Login from './pages/auth/Login';
 import Home from './pages/public/Home';
 import HospitalList from './pages/public/HospitalList';
 import HospitalDetail from './pages/public/HospitalDetail';
+import EmergencyButton from './components/emergency/EmergencyButton';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <EmergencyButton />
       </AuthProvider>
     </BrowserRouter>
   );
