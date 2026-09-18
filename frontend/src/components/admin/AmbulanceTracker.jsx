@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { MAPBOX_CONFIG } from '../../config/mapbox';
-import { Truck, MapPin, Phone, Radio, Check, RefreshCw, Crosshair, AlertCircle } from 'lucide-react';
+import { Truck, MapPin, Phone, Radio, Check, RefreshCw, Crosshair, AlertCircle, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AmbulanceTracker({
   ambulances = [],
   hospitalCoords,
   onUpdateLocation,
+  onDeleteAmbulance,
 }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -241,15 +242,30 @@ export default function AmbulanceTracker({
                     </div>
                   </div>
 
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      amb.is_available
-                        ? 'bg-emerald-500/20 text-emerald-300'
-                        : 'bg-red-500/20 text-red-300'
-                    }`}
-                  >
-                    {amb.is_available ? 'Available' : 'Busy'}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        amb.is_available
+                          ? 'bg-emerald-500/20 text-emerald-300'
+                          : 'bg-red-500/20 text-red-300'
+                      }`}
+                    >
+                      {amb.is_available ? 'Available' : 'Busy'}
+                    </span>
+                    {onDeleteAmbulance && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteAmbulance(amb.id, amb.vehicle_number);
+                        }}
+                        className="p-1 rounded-lg hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors"
+                        title="Remove from fleet"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </button>
               );
             })}

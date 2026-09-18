@@ -136,14 +136,23 @@ Route::middleware(['auth:sanctum', 'role:hospital_staff,hospital_admin,super_adm
     ->group(function () {
 
         // Beds
+        Route::post('/hospitals/{id}/beds', [BedController::class, 'store']);
         Route::put('/hospitals/{id}/beds/{bedId}', [BedController::class, 'update']);
+        Route::delete('/hospitals/{id}/beds/{bedId}', [BedController::class, 'destroy']);
 
         // Ambulances
+        Route::post('/hospitals/{id}/ambulances', [AmbulanceController::class, 'store']);
         Route::put('/hospitals/{id}/ambulances/{ambulanceId}', [AmbulanceController::class, 'update']);
         Route::put('/hospitals/{id}/ambulances/{ambulanceId}/track', [AmbulanceController::class, 'track']);
+        Route::delete('/hospitals/{id}/ambulances/{ambulanceId}', [AmbulanceController::class, 'destroy']);
 
         // OPD
+        Route::post('/hospitals/{id}/opd', [OPDQueueController::class, 'store']);
         Route::put('/hospitals/{id}/opd', [OPDQueueController::class, 'update']);
+        Route::delete('/hospitals/{id}/opd/{queueId}', [OPDQueueController::class, 'destroy']);
+
+        // Hospital Resource Initialization
+        Route::post('/hospitals/{id}/initialize-defaults', [\App\Http\Controllers\Api\Admin\HospitalManagementController::class, 'initializeDefaults']);
 
         // Blood Bank stock update
         Route::put('/blood-banks/{id}', [BloodBankController::class, 'update']);
@@ -220,6 +229,7 @@ Route::prefix('admin')
         Route::get('/hospitals/{id}',          [HospitalManagementController::class, 'show']);
         Route::put('/hospitals/{id}',          [HospitalManagementController::class, 'update']);
         Route::delete('/hospitals/{id}',       [HospitalManagementController::class, 'destroy']);
+        Route::post('/hospitals/{id}/initialize-defaults', [HospitalManagementController::class, 'initializeDefaults']);
 
         // User management
         Route::get('/users',                   [UserManagementController::class, 'index']);

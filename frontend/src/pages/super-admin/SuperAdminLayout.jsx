@@ -41,7 +41,7 @@ export default function SuperAdminLayout({ children }) {
   const activeNav = NAV.find((n) => location.pathname.startsWith(n.to));
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col overflow-x-hidden">
 
       {/* ── Top Nav ── */}
       <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800 shadow-xl shadow-slate-950/60">
@@ -201,7 +201,7 @@ export default function SuperAdminLayout({ children }) {
       )}
 
       {/* Main content */}
-      <main className="flex-1 w-full max-w-screen-2xl mx-auto px-4 sm:px-6 py-6">
+      <main className="flex-1 w-full max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 overflow-x-hidden">
         {children}
       </main>
     </div>

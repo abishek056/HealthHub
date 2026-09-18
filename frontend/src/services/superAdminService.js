@@ -69,12 +69,18 @@ export const getOpdWaitTimes = async (params = {}) => {
   return response.data;
 };
 
+export const initializeHospitalDefaults = async (id) => {
+  const response = await api.post(`/admin/hospitals/${id}/initialize-defaults`);
+  return response.data;
+};
+
 export default {
   getGlobalStats,
   getAllHospitals,
   createHospital,
   updateHospital,
   deleteHospital,
+  initializeHospitalDefaults,
   getAllUsers,
   createUser,
   updateUser,

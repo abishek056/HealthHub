@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { BedDouble, Check, AlertCircle, RefreshCw } from 'lucide-react';
+import { BedDouble, Check, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-export default function BedUpdateForm({ beds = [], onUpdateBed, loading }) {
+export default function BedUpdateForm({ beds = [], onUpdateBed, onDeleteBed, loading }) {
   // Local edit state per bed row: { [bedId]: { available_beds, total_beds, saving } }
   const [editState, setEditState] = useState({});
   const [savingId, setSavingId] = useState(null);
@@ -184,27 +184,38 @@ export default function BedUpdateForm({ beds = [], onUpdateBed, loading }) {
                     </td>
 
                     <td className="px-5 py-4 text-right">
-                      <button
-                        onClick={() => handleSave(bed)}
-                        disabled={isSaving || !hasChanged}
-                        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                          hasChanged
-                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/60'
-                            : 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                        }`}
-                      >
-                        {isSaving ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            Updating...
-                          </>
-                        ) : (
-                          <>
-                            <Check className="w-3.5 h-3.5" />
-                            Save
-                          </>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleSave(bed)}
+                          disabled={isSaving || !hasChanged}
+                          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            hasChanged
+                              ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/60'
+                              : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                          }`}
+                        >
+                          {isSaving ? (
+                            <>
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              Updating...
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              Save
+                            </>
+                          )}
+                        </button>
+                        {onDeleteBed && (
+                          <button
+                            onClick={() => onDeleteBed(bed.id, bed.ward_type)}
+                            className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-slate-700 hover:border-red-500/30 transition-all"
+                            title="Delete Ward"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         )}
-                      </button>
+                      </div>
                     </td>
                   </tr>
                 );

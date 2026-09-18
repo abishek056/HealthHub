@@ -92,4 +92,54 @@ class BedController extends Controller
             'bed' => $bed,
         ]);
     }
+
+    /**
+     * Create / Add a new bed / ward for a hospital.
+     */
+    public function store(Request $request, int|string $hospitalId): JsonResponse
+    {
+        $hospital = Hospital::find($hospitalId);
+        if (! $hospital) {
+            return response()->json(['message' => 'Hospital not found.'], 404);
+        }
+
+        $validated = $request->validate([
+            'ward_type'      => 'required|string|in:ICU,Emergency,General,Private',
+            'total_beds'     => 'required|integer|min:1',
+            'available_beds' => 'required|integer|min:0|lte:total_beds',
+        ]);
+
+        $bed = Bed::updateOrCreate(
+            ['hospital_id' => $hospitalId, 'ward_type' => $validated['ward_type']],
+            [
+                'total_beds'     => $validated['total_beds'],
+                'available_beds' => $validated['available_beds'],
+                'last_updated'   => now(),
+            ]
+        );
+
+        try {
+            broadcast(new BedAvailabilityUpdated($bed))->toOthers();
+        } catch (\Throwable) {}
+
+        return response()->json([
+            'message' => 'Ward bed created successfully.',
+            'bed'     => $bed,
+        ], 201);
+    }
+
+    /**
+     * Delete a bed / ward record.
+     */
+    public function destroy(int|string $hospitalId, int|string $bedId): JsonResponse
+    {
+        $bed = Bed::where('hospital_id', $hospitalId)->find($bedId);
+        if (! $bed) {
+            return response()->json(['message' => 'Bed record not found.'], 404);
+        }
+
+        $bed->delete();
+
+        return response()->json(['message' => 'Ward bed removed successfully.']);
+    }
 }

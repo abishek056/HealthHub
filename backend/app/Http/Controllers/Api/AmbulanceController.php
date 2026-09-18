@@ -124,4 +124,55 @@ class AmbulanceController extends Controller
             'ambulance' => self::formatAmbulance($ambulance),
         ]);
     }
+
+    /**
+     * Create / Add a new ambulance to the fleet.
+     */
+    public function store(Request $request, int|string $hospitalId): JsonResponse
+    {
+        $hospital = Hospital::find($hospitalId);
+        if (! $hospital) {
+            return response()->json(['message' => 'Hospital not found.'], 404);
+        }
+
+        $validated = $request->validate([
+            'driver_name'    => 'required|string|max:255',
+            'vehicle_number' => 'required|string|max:50',
+            'phone'          => 'required|string|max:20',
+            'latitude'       => 'nullable|numeric',
+            'longitude'      => 'nullable|numeric',
+            'is_available'   => 'nullable|boolean',
+        ]);
+
+        $ambulance = Ambulance::create([
+            'hospital_id'    => $hospitalId,
+            'driver_name'    => $validated['driver_name'],
+            'vehicle_number' => $validated['vehicle_number'],
+            'phone'          => $validated['phone'],
+            'latitude'       => $validated['latitude'] ?? ($hospital->latitude ?? 27.7056),
+            'longitude'      => $validated['longitude'] ?? ($hospital->longitude ?? 85.3131),
+            'is_available'   => $validated['is_available'] ?? true,
+            'is_on_call'     => false,
+        ]);
+
+        return response()->json([
+            'message'   => 'Ambulance added to fleet successfully.',
+            'ambulance' => self::formatAmbulance($ambulance),
+        ], 201);
+    }
+
+    /**
+     * Remove / Delete an ambulance from the fleet.
+     */
+    public function destroy(int|string $hospitalId, int|string $ambulanceId): JsonResponse
+    {
+        $ambulance = Ambulance::where('hospital_id', $hospitalId)->find($ambulanceId);
+        if (! $ambulance) {
+            return response()->json(['message' => 'Ambulance not found.'], 404);
+        }
+
+        $ambulance->delete();
+
+        return response()->json(['message' => 'Ambulance removed from fleet successfully.']);
+    }
 }

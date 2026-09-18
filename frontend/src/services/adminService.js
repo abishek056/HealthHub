@@ -22,9 +22,29 @@ export const updateBed = async (hospitalId, bedId, data) => {
   return response.data;
 };
 
+export const createBed = async (hospitalId, data) => {
+  const response = await api.post(`/hospitals/${hospitalId}/beds`, data);
+  return response.data;
+};
+
+export const deleteBed = async (hospitalId, bedId) => {
+  const response = await api.delete(`/hospitals/${hospitalId}/beds/${bedId}`);
+  return response.data;
+};
+
 // ── Ambulance Tracking & Status ──────────────────────────────────────
 export const getAmbulances = async (hospitalId) => {
   const response = await api.get(`/hospitals/${hospitalId}/ambulances`);
+  return response.data;
+};
+
+export const createAmbulance = async (hospitalId, data) => {
+  const response = await api.post(`/hospitals/${hospitalId}/ambulances`, data);
+  return response.data;
+};
+
+export const deleteAmbulance = async (hospitalId, ambulanceId) => {
+  const response = await api.delete(`/hospitals/${hospitalId}/ambulances/${ambulanceId}`);
   return response.data;
 };
 
@@ -44,8 +64,24 @@ export const getOpdQueues = async (hospitalId) => {
   return response.data;
 };
 
+export const createOpdQueue = async (hospitalId, data) => {
+  const response = await api.post(`/hospitals/${hospitalId}/opd`, data);
+  return response.data;
+};
+
+export const deleteOpdQueue = async (hospitalId, queueId) => {
+  const response = await api.delete(`/hospitals/${hospitalId}/opd/${queueId}`);
+  return response.data;
+};
+
 export const updateOpdQueue = async (hospitalId, data) => {
   const response = await api.put(`/hospitals/${hospitalId}/opd`, data);
+  return response.data;
+};
+
+// ── Initialize Default Services ──────────────────────────────────────
+export const initializeHospitalDefaults = async (hospitalId) => {
+  const response = await api.post(`/hospitals/${hospitalId}/initialize-defaults`);
   return response.data;
 };
 
@@ -114,11 +150,18 @@ export default {
   getHospitalDetails,
   getBeds,
   updateBed,
+  createBed,
+  deleteBed,
   getAmbulances,
+  createAmbulance,
+  deleteAmbulance,
   updateAmbulanceLocation,
   updateAmbulance,
   getOpdQueues,
+  createOpdQueue,
+  deleteOpdQueue,
   updateOpdQueue,
+  initializeHospitalDefaults,
   getPatientRecords,
   getPatientRecord,
   createPatientRecord,

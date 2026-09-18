@@ -47,7 +47,7 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
   const activeLink = navLinks.find((l) => location.pathname.startsWith(l.to));
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden">
 
       {/* ── Top Navigation Bar ── */}
       <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800 shadow-xl shadow-slate-950/60">
@@ -233,7 +233,7 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
       )}
 
       {/* ── Main Content ── */}
-      <main className="flex-1 w-full max-w-screen-2xl mx-auto px-4 sm:px-6 py-6">
+      <main className="flex-1 w-full max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 overflow-x-hidden">
         {children}
       </main>
     </div>

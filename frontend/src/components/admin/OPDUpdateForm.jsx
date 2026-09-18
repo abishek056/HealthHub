@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Users, UserPlus, Check, RefreshCw, Clock } from 'lucide-react';
+import { Users, UserPlus, Check, RefreshCw, Clock, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-export default function OPDUpdateForm({ queues = [], onUpdateQueue }) {
+export default function OPDUpdateForm({ queues = [], onUpdateQueue, onDeleteQueue }) {
   const [editState, setEditState] = useState({});
   const [updatingDept, setUpdatingDept] = useState(null);
 
@@ -209,18 +209,29 @@ export default function OPDUpdateForm({ queues = [], onUpdateQueue }) {
                     </td>
 
                     <td className="px-5 py-4 text-right">
-                      <button
-                        onClick={() => handleSave(q.department)}
-                        disabled={isUpdating}
-                        className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/60 transition-all cursor-pointer disabled:opacity-50"
-                      >
-                        {isUpdating ? (
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Check className="w-3.5 h-3.5" />
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleSave(q.department)}
+                          disabled={isUpdating}
+                          className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/60 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          {isUpdating ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Check className="w-3.5 h-3.5" />
+                          )}
+                          Update
+                        </button>
+                        {onDeleteQueue && (
+                          <button
+                            onClick={() => onDeleteQueue(q.id, q.department)}
+                            className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-slate-700 hover:border-red-500/30 transition-all"
+                            title="Remove department"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         )}
-                        Update
-                      </button>
+                      </div>
                     </td>
                   </tr>
                 );

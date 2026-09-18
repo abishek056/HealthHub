@@ -69,16 +69,38 @@ class HospitalManagementController extends Controller
 
     /**
      * POST /api/admin/hospitals
-     * Create a new hospital.
+     * Create a new hospital and auto-initialize default resources (beds, fleet, opd, blood).
      */
-    public function store(CreateHospitalRequest $request): JsonResponse
+    public function store(CreateHospitalRequest $request, \App\Services\HospitalInitializationService $initService): JsonResponse
     {
         $hospital = Hospital::create($request->validated());
 
+        // Only seed blood bank slots (8 blood groups, 0 units each).
+        // Beds, ambulances, and OPD queues must be added manually by the hospital admin.
+        $initService->initialize($hospital);
+
         return response()->json([
-            'message'  => 'Hospital created successfully.',
-            'hospital' => new AdminHospitalResource($hospital),
+            'message'  => 'Hospital created successfully. Please configure wards, ambulances, and OPD queues from the Hospital Admin dashboard.',
+            'hospital' => new AdminHospitalResource($hospital->fresh(['beds', 'ambulances', 'opdQueues', 'bloodBanks'])),
         ], 201);
+    }
+
+    /**
+     * POST /api/admin/hospitals/{id}/initialize-defaults
+     * Initialize standard beds, ambulances, OPD queues, and blood banks.
+     */
+    public function initializeDefaults(int $id, \App\Services\HospitalInitializationService $initService): JsonResponse
+    {
+        $hospital = Hospital::findOrFail($id);
+
+        // Uses the bulk-seed method that also creates default beds, ambulances, and OPD queues.
+        $counts = $initService->initializeWithDefaults($hospital);
+
+        return response()->json([
+            'message'  => 'Default beds, ambulances, and OPD queues initialized for this hospital.',
+            'counts'   => $counts,
+            'hospital' => new AdminHospitalResource($hospital->fresh(['beds', 'ambulances', 'opdQueues', 'bloodBanks'])),
+        ]);
     }
 
     /**

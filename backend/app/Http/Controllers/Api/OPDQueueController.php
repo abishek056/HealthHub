@@ -83,6 +83,63 @@ class OPDQueueController extends Controller
     }
 
     /**
+     * Create / Add a new OPD department queue.
+     */
+    public function store(Request $request, int|string $hospitalId): JsonResponse
+    {
+        $hospital = Hospital::find($hospitalId);
+        if (! $hospital) {
+            return response()->json(['message' => 'Hospital not found.'], 404);
+        }
+
+        $validated = $request->validate([
+            'department'          => 'required|string|max:100',
+            'current_token'       => 'nullable|integer|min:0',
+            'estimated_wait_mins' => 'nullable|integer|min:0',
+            'crowd_level'         => 'nullable|in:low,moderate,medium,high',
+        ]);
+
+        $crowd = $validated['crowd_level'] ?? 'low';
+        if ($crowd === 'medium') {
+            $crowd = 'moderate';
+        }
+
+        $queue = OpdQueue::updateOrCreate(
+            ['hospital_id' => $hospitalId, 'department' => $validated['department']],
+            [
+                'current_token'       => $validated['current_token'] ?? 1,
+                'estimated_wait_mins' => $validated['estimated_wait_mins'] ?? 15,
+                'crowd_level'         => $crowd,
+                'last_updated'        => now(),
+            ]
+        );
+
+        try {
+            broadcast(new OPDQueueUpdated($queue))->toOthers();
+        } catch (\Throwable) {}
+
+        return response()->json([
+            'message' => 'OPD department created successfully.',
+            'queue'   => $queue,
+        ], 201);
+    }
+
+    /**
+     * Delete an OPD department queue.
+     */
+    public function destroy(int|string $hospitalId, int|string $queueId): JsonResponse
+    {
+        $queue = OpdQueue::where('hospital_id', $hospitalId)->find($queueId);
+        if (! $queue) {
+            return response()->json(['message' => 'OPD department not found.'], 404);
+        }
+
+        $queue->delete();
+
+        return response()->json(['message' => 'OPD department removed successfully.']);
+    }
+
+    /**
      * Book an OPD token (patient).
      */
     public function bookToken(Request $request, int|string $hospitalId): JsonResponse
