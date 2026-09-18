@@ -7,6 +7,9 @@ use App\Http\Controllers\Api\BloodBankController;
 use App\Http\Controllers\Api\BloodDonorController;
 use App\Http\Controllers\Api\HospitalController;
 use App\Http\Controllers\Api\OPDQueueController;
+use App\Http\Controllers\Api\Admin\DashboardController;
+use App\Http\Controllers\Api\Admin\HospitalManagementController;
+use App\Http\Controllers\Api\Admin\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -121,3 +124,45 @@ Route::middleware(['auth:sanctum', 'role:super_admin'])->group(function () {
     Route::put('/hospitals/{id}', [HospitalController::class, 'update']);
     Route::delete('/hospitals/{id}', [HospitalController::class, 'destroy']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Super Admin Panel Routes  —  /api/admin/*
+|--------------------------------------------------------------------------
+|
+| GET  /api/admin/stats                    - aggregated dashboard stats
+| GET  /api/admin/hospitals/occupancy      - hospitals by bed occupancy
+| GET  /api/admin/hospitals                - list all hospitals
+| POST /api/admin/hospitals                - create hospital
+| GET  /api/admin/hospitals/{id}           - show hospital details
+| PUT  /api/admin/hospitals/{id}           - update hospital
+| DELETE /api/admin/hospitals/{id}         - delete hospital
+| GET  /api/admin/users                    - list all users
+| POST /api/admin/users                    - create user
+| GET  /api/admin/users/{id}              - show user
+| PUT  /api/admin/users/{id}              - update user
+| DELETE /api/admin/users/{id}            - delete user
+*/
+
+Route::prefix('admin')
+    ->middleware(['auth:sanctum', 'role:super_admin'])
+    ->group(function () {
+
+        // Dashboard
+        Route::get('/stats',                   [DashboardController::class, 'stats']);
+        Route::get('/hospitals/occupancy',     [DashboardController::class, 'hospitalsByOccupancy']);
+
+        // Hospital management
+        Route::get('/hospitals',               [HospitalManagementController::class, 'index']);
+        Route::post('/hospitals',              [HospitalManagementController::class, 'store']);
+        Route::get('/hospitals/{id}',          [HospitalManagementController::class, 'show']);
+        Route::put('/hospitals/{id}',          [HospitalManagementController::class, 'update']);
+        Route::delete('/hospitals/{id}',       [HospitalManagementController::class, 'destroy']);
+
+        // User management
+        Route::get('/users',                   [UserManagementController::class, 'index']);
+        Route::post('/users',                  [UserManagementController::class, 'store']);
+        Route::get('/users/{id}',              [UserManagementController::class, 'show']);
+        Route::put('/users/{id}',              [UserManagementController::class, 'update']);
+        Route::delete('/users/{id}',           [UserManagementController::class, 'destroy']);
+    });
