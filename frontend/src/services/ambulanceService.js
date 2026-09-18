@@ -62,13 +62,12 @@ const MOCK_AMBULANCES = {
  */
 export const getAmbulances = async (hospitalId) => {
   try {
-    const response = await api.get(`/hospitals/${hospitalId}/ambulances`);
+    const response = await api.get(`/hospitals/${hospitalId}/ambulances`, {
+      skipErrorToast: true,
+    });
     return response.data;
   } catch (error) {
-    if (error.response?.status === 404) {
-      console.warn('[ambulanceService] Using mock ambulance data.');
-      return MOCK_AMBULANCES[parseInt(hospitalId)] || [];
-    }
-    throw error;
+    console.warn('[ambulanceService] Using mock ambulance data fallback:', error?.message);
+    return MOCK_AMBULANCES[parseInt(hospitalId)] || [];
   }
 };

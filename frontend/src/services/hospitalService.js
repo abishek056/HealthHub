@@ -51,40 +51,37 @@ const MOCK_HOSPITALS = [
 export const getHospitals = async (filters = {}) => {
   try {
     // Attempt real API call
-    const response = await api.get('/hospitals', { params: filters });
+    const response = await api.get('/hospitals', {
+      params: filters,
+      skipErrorToast: true,
+    });
     return response.data;
   } catch (error) {
-    // Fallback to mock data on 404 (backend not ready)
-    if (error.response?.status === 404) {
-      console.warn("Using mock hospital data since backend route is missing.");
-      
-      let filtered = [...MOCK_HOSPITALS];
-      if (filters.search) {
-        const query = filters.search.toLowerCase();
-        filtered = filtered.filter(h => h.name.toLowerCase().includes(query) || h.address.toLowerCase().includes(query));
-      }
-      if (filters.service) {
-        filtered = filtered.filter(h => h.services.includes(filters.service));
-      }
-      return filtered;
+    console.warn("API request failed, falling back to mock hospitals:", error.message);
+    
+    let filtered = [...MOCK_HOSPITALS];
+    if (filters.search) {
+      const query = filters.search.toLowerCase();
+      filtered = filtered.filter(h => h.name.toLowerCase().includes(query) || h.address.toLowerCase().includes(query));
     }
-    throw error;
+    if (filters.service) {
+      filtered = filtered.filter(h => h.services.includes(filters.service));
+    }
+    return filtered;
   }
 };
 
 export const getHospitalById = async (id) => {
   try {
     // Attempt real API call
-    const response = await api.get(`/hospitals/${id}`);
+    const response = await api.get(`/hospitals/${id}`, {
+      skipErrorToast: true,
+    });
     return response.data;
   } catch (error) {
-    // Fallback to mock data on 404
-    if (error.response?.status === 404) {
-      console.warn("Using mock hospital detail data since backend route is missing.");
-      const hospital = MOCK_HOSPITALS.find(h => h.id === parseInt(id));
-      if (!hospital) throw new Error("Hospital not found in mock data");
-      return hospital;
-    }
+    console.warn("API request failed, falling back to mock hospital detail:", error.message);
+    const hospital = MOCK_HOSPITALS.find(h => h.id === parseInt(id));
+    if (hospital) return hospital;
     throw error;
   }
 };

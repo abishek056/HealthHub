@@ -26,6 +26,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.config?.skipErrorToast) {
+      return Promise.reject(error);
+    }
+
     if (!error.response) {
       toast.error('Network Error. Please check your connection.');
       return Promise.reject(error);

@@ -8,6 +8,74 @@ const HospitalMap = ({ hospitals, onMarkerClick }) => {
   const [popupInfo, setPopupInfo] = useState(null);
   const navigate = useNavigate();
 
+  const isMapboxConfigured =
+    MAPBOX_CONFIG.accessToken &&
+    MAPBOX_CONFIG.accessToken !== 'your_mapbox_token_here' &&
+    MAPBOX_CONFIG.accessToken.startsWith('pk.');
+
+  if (!isMapboxConfigured) {
+    return (
+      <div className="w-full h-full min-h-[400px] bg-slate-100 rounded-xl overflow-hidden shadow-inner relative flex flex-col items-center justify-center p-6 border border-slate-200">
+        {/* Subtle Map Grid Pattern */}
+        <div 
+          className="absolute inset-0 opacity-40 pointer-events-none" 
+          style={{
+            backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px), linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)',
+            backgroundSize: '20px 20px, 60px 60px, 60px 60px',
+          }}
+        />
+
+        {/* Mapbox Token Notice */}
+        <div className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-full px-3 py-1 text-xs font-medium text-gray-600 flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+          Map Preview Mode (Set VITE_MAPBOX_TOKEN for live tiles)
+        </div>
+
+        {/* Interactive Pin Grid Preview */}
+        <div className="relative z-10 w-full max-w-lg bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+              <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              Hospital Locations ({hospitals?.length || 0})
+            </h3>
+            <span className="text-xs text-primary-700 bg-primary-50 px-2 py-0.5 rounded-full font-semibold">
+              Kathmandu Valley
+            </span>
+          </div>
+
+          <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+            {(hospitals || []).map((hospital) => (
+              <div 
+                key={hospital.id}
+                onClick={() => {
+                  setPopupInfo(hospital);
+                  if (onMarkerClick) onMarkerClick(hospital);
+                }}
+                className="group p-3 rounded-xl border border-gray-100 hover:border-primary-300 hover:bg-primary-50/50 transition-all cursor-pointer flex items-center justify-between"
+              >
+                <div className="min-w-0 pr-3">
+                  <h4 className="font-semibold text-gray-900 text-sm truncate group-hover:text-primary-700">
+                    {hospital.name}
+                  </h4>
+                  <p className="text-xs text-gray-500 truncate">{hospital.address}</p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/hospitals/${hospital.id}`);
+                  }}
+                  className="shrink-0 text-xs font-semibold bg-primary-600 text-white px-3 py-1.5 rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
+                >
+                  View
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full min-h-[400px] bg-gray-100 rounded-xl overflow-hidden shadow-inner relative">
       <Map

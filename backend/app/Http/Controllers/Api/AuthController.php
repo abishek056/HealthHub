@@ -29,9 +29,6 @@ class AuthController extends Controller
             ]);
         }
 
-        // Revoke existing tokens (optional – forces single device)
-        // $user->tokens()->delete();
-
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
@@ -39,10 +36,11 @@ class AuthController extends Controller
             'token'   => $token,
             'token_type' => 'Bearer',
             'user'    => [
-                'id'    => $user->id,
-                'name'  => $user->name,
-                'email' => $user->email,
-                'role'  => $user->role,
+                'id'          => $user->id,
+                'name'        => $user->name,
+                'email'       => $user->email,
+                'role'        => $user->role,
+                'hospital_id' => $user->hospital_id,
             ],
         ]);
     }
@@ -60,26 +58,29 @@ class AuthController extends Controller
         }
 
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'role'     => 'required|in:super_admin,hospital_admin,hospital_staff',
+            'name'        => 'required|string|max:255',
+            'email'       => 'required|email|unique:users,email',
+            'password'    => 'required|string|min:8|confirmed',
+            'role'        => 'required|in:super_admin,hospital_admin,hospital_staff',
+            'hospital_id' => 'nullable|exists:hospitals,id',
         ]);
 
         $user = User::create([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role'     => $validated['role'],
+            'name'        => $validated['name'],
+            'email'       => $validated['email'],
+            'password'    => Hash::make($validated['password']),
+            'role'        => $validated['role'],
+            'hospital_id' => $validated['hospital_id'] ?? null,
         ]);
 
         return response()->json([
             'message' => 'User registered successfully',
             'user'    => [
-                'id'    => $user->id,
-                'name'  => $user->name,
-                'email' => $user->email,
-                'role'  => $user->role,
+                'id'          => $user->id,
+                'name'        => $user->name,
+                'email'       => $user->email,
+                'role'        => $user->role,
+                'hospital_id' => $user->hospital_id,
             ],
         ], 201);
     }
@@ -89,7 +90,6 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        // Delete the current access token
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
@@ -106,10 +106,11 @@ class AuthController extends Controller
 
         return response()->json([
             'user' => [
-                'id'    => $user->id,
-                'name'  => $user->name,
-                'email' => $user->email,
-                'role'  => $user->role,
+                'id'          => $user->id,
+                'name'        => $user->name,
+                'email'       => $user->email,
+                'role'        => $user->role,
+                'hospital_id' => $user->hospital_id,
             ],
         ]);
     }
