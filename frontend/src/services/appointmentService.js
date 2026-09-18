@@ -11,6 +11,12 @@ export const getAppointments = async (params = {}) => {
   return response.data;
 };
 
+// ── Hospital Specific Appointments ─────────────────────────────────
+export const getHospitalAppointments = async (hospitalId, params = {}) => {
+  const response = await api.get(`/hospitals/${hospitalId}/appointments`, { params });
+  return response.data;
+};
+
 // ── Book Appointment ────────────────────────────────────────────────
 export const bookAppointment = async (appointmentData) => {
   const response = await api.post('/appointments', appointmentData);
@@ -29,9 +35,20 @@ export const cancelAppointment = async (id) => {
   return response.data;
 };
 
+// ── Update Appointment Status (Hospital Staff / Admin) ───────────────
+export const updateAppointmentStatus = async (id, status, extra = {}) => {
+  const response = await api.put(`/appointments/${id}/status`, {
+    status,
+    ...extra,
+  });
+  return response.data;
+};
+
 export default {
   getAppointments,
+  getHospitalAppointments,
   bookAppointment,
   getAppointmentDetails,
   cancelAppointment,
+  updateAppointmentStatus,
 };

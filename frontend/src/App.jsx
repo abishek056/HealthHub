@@ -11,6 +11,7 @@ import EmergencyButton from './components/emergency/EmergencyButton';
 import ProtectedRoute from './utils/ProtectedRoute';
 
 import HospitalDashboard from './pages/hospital-admin/Dashboard';
+import ManageAppointments from './pages/hospital-admin/ManageAppointments';
 import ManageBeds from './pages/hospital-admin/ManageBeds';
 import TrackAmbulance from './pages/hospital-admin/TrackAmbulance';
 import ManageOPD from './pages/hospital-admin/ManageOPD';
@@ -41,7 +42,7 @@ function App() {
           <Route
             path="/user/dashboard"
             element={
-              <ProtectedRoute allowedRoles={['patient', 'hospital_admin', 'hospital_staff', 'super_admin']}>
+              <ProtectedRoute allowedRoles={['patient']}>
                 <PatientDashboard />
               </ProtectedRoute>
             }
@@ -49,7 +50,7 @@ function App() {
           <Route
             path="/user/appointments"
             element={
-              <ProtectedRoute allowedRoles={['patient', 'hospital_admin', 'hospital_staff', 'super_admin']}>
+              <ProtectedRoute allowedRoles={['patient']}>
                 <PatientDashboard />
               </ProtectedRoute>
             }
@@ -61,6 +62,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['hospital_admin', 'hospital_staff', 'super_admin']}>
                 <HospitalDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hospital/appointments"
+            element={
+              <ProtectedRoute allowedRoles={['hospital_admin', 'hospital_staff', 'super_admin']}>
+                <ManageAppointments />
               </ProtectedRoute>
             }
           />

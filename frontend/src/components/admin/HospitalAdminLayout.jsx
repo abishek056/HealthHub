@@ -15,15 +15,17 @@ import {
   X,
   ChevronDown,
   ShieldCheck,
+  Calendar,
 } from 'lucide-react';
 
 const navLinks = [
-  { to: '/hospital/dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'text-sky-400' },
-  { to: '/hospital/beds',      label: 'Beds',       icon: BedDouble,      color: 'text-blue-400' },
-  { to: '/hospital/ambulances',label: 'Ambulances', icon: Truck,          color: 'text-emerald-400' },
-  { to: '/hospital/opd',       label: 'OPD Queue',  icon: Users,          color: 'text-purple-400' },
-  { to: '/hospital/patients',  label: 'Patients',   icon: FileText,       color: 'text-amber-400' },
-  { to: '/hospital/staff',     label: 'Staff',      icon: UserPlus,       color: 'text-rose-400' },
+  { to: '/hospital/dashboard',    label: 'Dashboard',    icon: LayoutDashboard, color: 'text-sky-400' },
+  { to: '/hospital/appointments', label: 'Appointments', icon: Calendar,        color: 'text-cyan-400' },
+  { to: '/hospital/beds',         label: 'Beds',         icon: BedDouble,      color: 'text-blue-400' },
+  { to: '/hospital/ambulances',   label: 'Ambulances',   icon: Truck,          color: 'text-emerald-400' },
+  { to: '/hospital/opd',          label: 'OPD Queue',    icon: Users,          color: 'text-purple-400' },
+  { to: '/hospital/patients',     label: 'Patients',     icon: FileText,       color: 'text-amber-400' },
+  { to: '/hospital/staff',        label: 'Staff',        icon: UserPlus,       color: 'text-rose-400' },
 ];
 
 export default function HospitalAdminLayout({ children, title, subtitle }) {

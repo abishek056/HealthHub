@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Helpers\LocationHelper;
 use App\Models\Hospital;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class EmergencyService
 {
@@ -26,21 +27,19 @@ class EmergencyService
     ): Collection {
         $distanceExpr = LocationHelper::haversineSelectRaw($lat, $lng);
 
-        $hospitals = Hospital::with(['beds', 'ambulances'])
+        $query = Hospital::with(['beds', 'ambulances', 'bloodBanks'])
             ->where('is_active', true)
-            ->selectRaw("hospitals.*, {$distanceExpr} AS distance_km")
-            ->having('distance_km', '<=', $radius)
-            ->orderBy('distance_km')
-            ->when($bloodGroup, function ($q) use ($bloodGroup) {
-                // Only return hospitals whose blood bank has stock of the requested group
-                $q->whereHas('bloodBanks', fn ($b) =>
-                    $b->where('blood_group', $bloodGroup)
-                      ->where('units_available', '>', 0)
-                );
-            })
-            ->get();
+            ->selectRaw("hospitals.*, {$distanceExpr} AS distance_km");
 
-        return $hospitals->map(function (Hospital $hospital) {
+        if (DB::getDriverName() === 'sqlite') {
+            $hospitals = $query->get()->filter(fn ($h) => $h->distance_km <= $radius)->sortBy('distance_km');
+        } else {
+            $hospitals = $query->having('distance_km', '<=', $radius)
+                ->orderBy('distance_km')
+                ->get();
+        }
+
+        return $hospitals->map(function (Hospital $hospital) use ($bloodGroup) {
             $icuBeds       = $hospital->beds->where('ward_type', 'ICU');
             $emergencyBeds = $hospital->beds->where('ward_type', 'Emergency');
             $generalBeds   = $hospital->beds->where('ward_type', 'General');
@@ -48,6 +47,15 @@ class EmergencyService
             $availableAmbulances = $hospital->ambulances
                 ->where('status', 'available')
                 ->values();
+
+            // Check if this hospital has the requested blood group in stock
+            $hasBloodGroup = false;
+            if ($bloodGroup) {
+                $hasBloodGroup = $hospital->bloodBanks
+                    ->where('blood_group', $bloodGroup)
+                    ->where('units_available', '>', 0)
+                    ->isNotEmpty();
+            }
 
             return [
                 'id'                       => $hospital->id,
@@ -62,6 +70,7 @@ class EmergencyService
                 'emergency_beds_available' => (int) $emergencyBeds->sum('available'),
                 'general_beds_available'   => (int) $generalBeds->sum('available'),
                 'ambulances_available'     => $availableAmbulances->count(),
+                'has_blood_group'          => $hasBloodGroup,
                 'nearest_ambulance'        => $availableAmbulances->first() ? [
                     'id'             => $availableAmbulances->first()->id,
                     'driver_name'    => $availableAmbulances->first()->driver_name,

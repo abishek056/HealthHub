@@ -36,6 +36,17 @@ export default function PatientDashboard() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedTicket, setSelectedTicket] = useState(null);
 
+  // Non-patient users (hospital admin, staff, super admin) should never view the Patient Portal
+  useEffect(() => {
+    if (user && user.role !== 'patient') {
+      if (user.role === 'hospital_admin' || user.role === 'hospital_staff') {
+        navigate('/hospital/dashboard', { replace: true });
+      } else if (user.role === 'super_admin') {
+        navigate('/admin/dashboard', { replace: true });
+      }
+    }
+  }, [user, navigate]);
+
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
     try {
@@ -44,39 +55,12 @@ export default function PatientDashboard() {
       setAppointments(list);
     } catch (err) {
       console.warn('Failed to fetch appointments:', err);
-      // Mock appointments fallback for demo
-      setAppointments([
-        {
-          id: 1,
-          token_number: 'APT-BIR-7421',
-          hospital: { name: 'Bir Hospital', address: 'Kantipath, Kathmandu', city: 'Kathmandu', phone: '01-4221119' },
-          department: 'Cardiology',
-          doctor_name: 'Dr. K.P. Sharma',
-          appointment_date: '2026-09-22',
-          time_slot: '10:30 AM - 11:00 AM',
-          patient_name: user?.name || 'Ram Sharma',
-          patient_phone: user?.phone || '9841234567',
-          status: 'confirmed',
-          symptoms: 'Routine checkup & blood pressure review',
-        },
-        {
-          id: 2,
-          token_number: 'APT-PAT-3310',
-          hospital: { name: 'Patan Hospital', address: 'Lagankhel, Lalitpur', city: 'Lalitpur', phone: '01-5522266' },
-          department: 'Orthopedics',
-          doctor_name: 'Dr. Anita Joshi',
-          appointment_date: '2026-09-28',
-          time_slot: '02:00 PM - 02:30 PM',
-          patient_name: user?.name || 'Ram Sharma',
-          patient_phone: user?.phone || '9841234567',
-          status: 'confirmed',
-          symptoms: 'Knee pain after workout',
-        },
-      ]);
+      // Do not leak or show dummy appointments — maintain patient isolation
+      setAppointments([]);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     fetchAppointments();

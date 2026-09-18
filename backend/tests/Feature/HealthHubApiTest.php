@@ -42,4 +42,26 @@ class HealthHubApiTest extends TestCase
 
         $statsResponse->assertStatus(200);
     }
+
+    public function test_emergency_routing_with_blood_group(): void
+    {
+        $hospital = Hospital::factory()->create([
+            'name' => 'Kathmandu Emergency Hospital',
+            'latitude' => 27.7056,
+            'longitude' => 85.3131,
+            'is_active' => true,
+        ]);
+
+        $hospital->bloodBanks()->create([
+            'blood_group' => 'O+',
+            'units_available' => 5,
+            'last_updated' => now(),
+        ]);
+
+        $response = $this->getJson('/api/emergency/find-nearest-hospital?latitude=27.7052&longitude=85.3144&blood_group=O+');
+
+        $response->assertStatus(200)
+                 ->assertJsonPath('success', true)
+                 ->assertJsonPath('data.hospital.has_blood_group', true);
+    }
 }

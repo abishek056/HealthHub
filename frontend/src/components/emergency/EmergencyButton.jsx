@@ -47,13 +47,9 @@ export default function EmergencyButton() {
           aria-label="Open Emergency Services & Ambulance Routing"
           aria-haspopup="dialog"
           aria-expanded={isModalOpen}
-          className="relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-red-700 via-red-600 to-rose-500 text-white shadow-2xl shadow-red-600/60 hover:shadow-red-500/80 hover:scale-108 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-red-400/50 cursor-pointer"
+          className="relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-red-700 via-red-600 to-rose-500 text-white shadow-2xl shadow-red-600/60 hover:shadow-red-500/80 hover:scale-105 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-red-400/50 cursor-pointer"
         >
-          {/* Pulsing beacon radar ring */}
-          <span className="absolute -inset-1 rounded-full bg-red-500/40 animate-ping pointer-events-none" />
-          <span className="absolute -inset-2 rounded-full bg-red-600/20 animate-pulse pointer-events-none" />
-
-          {/* Icon with emergency siren vibration */}
+          {/* Icon */}
           <div className="relative z-10 flex flex-col items-center justify-center">
             <AmbulanceIcon className="w-7 h-7 sm:w-8 sm:h-8" />
             <span className="text-[9px] font-black uppercase tracking-wider leading-none mt-0.5">

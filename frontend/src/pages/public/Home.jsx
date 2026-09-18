@@ -213,18 +213,6 @@ const Home = () => {
         </div>
       </main>
 
-      {/* Floating Emergency Button */}
-      <button 
-        onClick={() => alert("Calling Emergency Services (102)...")}
-        className="fixed bottom-8 right-8 bg-red-600 text-white p-4 rounded-full shadow-2xl hover:bg-red-700 hover:scale-105 transition-all focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 z-50 group flex items-center justify-center animate-bounce"
-        aria-label="Emergency Call"
-      >
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-        <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 ease-in-out font-bold whitespace-nowrap group-hover:ml-3">
-          EMERGENCY
-        </span>
-      </button>
-
       {/* Footer */}
       <footer className="bg-gray-900 text-white mt-auto">
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">

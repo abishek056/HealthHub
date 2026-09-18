@@ -23,6 +23,7 @@ import {
   Brain,
   Eye,
   Shield,
+  ShieldAlert,
   Printer,
   Sparkles,
   ArrowRight,
@@ -80,6 +81,18 @@ export default function BookAppointment() {
 
   const [submitting, setSubmitting] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+
+  // Hospital staff/admin should not use the public booking form.
+  // Redirect them to their own hospital's appointment desk.
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'hospital_admin' || user.role === 'hospital_staff') {
+        navigate('/hospital/appointments', { replace: true });
+      } else if (user.role === 'super_admin') {
+        navigate('/admin/dashboard', { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   // Fetch Hospitals
   useEffect(() => {
@@ -218,11 +231,11 @@ export default function BookAppointment() {
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <Link
-              to="/user/dashboard"
+              to={user?.role === 'patient' ? '/user/dashboard' : '/hospital/dashboard'}
               className="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
             >
               <User className="w-3.5 h-3.5 text-primary-400" />
-              Patient Portal
+              {user?.role === 'patient' ? 'Patient Portal' : 'Hospital Dashboard'}
             </Link>
           ) : (
             <Link
@@ -237,9 +250,41 @@ export default function BookAppointment() {
 
       {/* Main Form Container */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-        {/* Step Indicator */}
-        {step < 5 && (
-          <div className="mb-8">
+        {/* Hospital Admin / Staff Notice (Cannot book appointments for other hospitals) */}
+        {user && (user.role === 'hospital_admin' || user.role === 'hospital_staff') ? (
+          <div className="max-w-xl mx-auto my-12 bg-slate-900 border border-amber-500/30 rounded-3xl p-8 text-center space-y-6 shadow-2xl">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center mx-auto">
+              <ShieldAlert className="w-8 h-8" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Staff Access Notice</h2>
+              <p className="text-slate-300 text-sm mt-2 leading-relaxed">
+                You are signed in as <span className="font-semibold text-white">{user.name}</span> ({user.role === 'hospital_admin' ? 'Hospital Administrator' : 'Hospital Staff'}).
+              </p>
+              <p className="text-slate-400 text-xs mt-2 leading-relaxed">
+                Hospital personnel cannot register appointments for other hospitals. Please use the Hospital Appointments Desk to view, manage, or register walk-in patients for your own hospital.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Link
+                to="/hospital/appointments"
+                className="flex-1 py-3 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition-colors shadow-lg shadow-cyan-600/20"
+              >
+                Go to Hospital Appointments Desk
+              </Link>
+              <Link
+                to="/hospital/dashboard"
+                className="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition-colors border border-slate-700"
+              >
+                Hospital Dashboard
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Step Indicator */}
+            {step < 5 && (
+              <div className="mb-8">
             <div className="flex items-center justify-between max-w-2xl mx-auto mb-2 text-xs font-medium text-slate-400">
               <span className={step >= 1 ? 'text-primary-400 font-semibold' : ''}>1. Hospital</span>
               <span className={step >= 2 ? 'text-primary-400 font-semibold' : ''}>2. Department</span>
@@ -699,6 +744,8 @@ export default function BookAppointment() {
               </Link>
             </div>
           </div>
+        )}
+          </>
         )}
       </main>
     </div>

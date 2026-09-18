@@ -13,14 +13,18 @@ import {
   ShieldCheck,
   TrendingUp,
   RefreshCw,
-  UserPlus
+  UserPlus,
+  Calendar,
+  CheckCircle2,
+  ChevronRight,
 } from 'lucide-react';
 import {
   getHospitalDetails,
   getBeds,
   getAmbulances,
   getOpdQueues,
-  getPatientRecords
+  getPatientRecords,
+  getHospitalAppointments,
 } from '../../services/adminService';
 
 export default function Dashboard() {
@@ -36,20 +40,25 @@ export default function Dashboard() {
     avgWaitTime: 0,
     totalQueues: 0,
     patientRecordsCount: 0,
+    totalAppointments: 0,
+    todayAppointments: 0,
+    confirmedAppointments: 0,
   });
   const [hospitalInfo, setHospitalInfo] = useState(null);
   const [recentPatients, setRecentPatients] = useState([]);
+  const [recentAppointments, setRecentAppointments] = useState([]);
   const [bedsData, setBedsData] = useState([]);
 
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      const [hosp, bedsRes, ambRes, opdRes, patientsRes] = await Promise.allSettled([
+      const [hosp, bedsRes, ambRes, opdRes, patientsRes, aptsRes] = await Promise.allSettled([
         getHospitalDetails(hospitalId),
         getBeds(hospitalId),
         getAmbulances(hospitalId),
         getOpdQueues(hospitalId),
         getPatientRecords({ per_page: 5 }),
+        getHospitalAppointments(hospitalId),
       ]);
 
       // Hospital
@@ -98,6 +107,22 @@ export default function Dashboard() {
         pCount = patientsRes.value?.meta?.total || pData.length;
       }
 
+      // Appointments
+      let aptTotal = 0;
+      let aptToday = 0;
+      let aptConfirmed = 0;
+      if (aptsRes.status === 'fulfilled') {
+        const rawApts = Array.isArray(aptsRes.value) ? aptsRes.value : aptsRes.value?.data || [];
+        aptTotal = rawApts.length;
+        const todayStr = new Date().toISOString().split('T')[0];
+        aptToday = rawApts.filter((a) => {
+          const d = a.appointment_date ? a.appointment_date.split('T')[0] : '';
+          return d === todayStr;
+        }).length;
+        aptConfirmed = rawApts.filter((a) => a.status === 'confirmed').length;
+        setRecentAppointments(rawApts.slice(0, 5));
+      }
+
       setStats({
         totalBeds: totalB,
         availableBeds: availB,
@@ -106,6 +131,9 @@ export default function Dashboard() {
         avgWaitTime: avgWait,
         totalQueues: totalQ,
         patientRecordsCount: pCount,
+        totalAppointments: aptTotal,
+        todayAppointments: aptToday,
+        confirmedAppointments: aptConfirmed,
       });
     } catch (err) {
       console.error('Failed to load dashboard data', err);
@@ -129,7 +157,7 @@ export default function Dashboard() {
     >
       <div className="space-y-6">
         {/* KPI Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Card 1: Available Beds */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group hover:border-slate-700 transition-all">
             <div className="flex items-center justify-between">
@@ -156,7 +184,33 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Card 2: Active Ambulances */}
+          {/* Card 2: Appointments */}
+          <Link
+            to="/hospital/appointments"
+            className="bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl p-5 shadow-xl relative overflow-hidden group transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-cyan-300 transition-colors">
+                Appointments
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Calendar className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-baseline gap-2">
+              <span className="text-3xl font-black text-cyan-400">{stats.totalAppointments}</span>
+              <span className="text-xs text-slate-400 font-semibold">({stats.confirmedAppointments} active)</span>
+            </div>
+            <p className="mt-3 text-xs text-slate-400 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                {stats.todayAppointments} scheduled today
+              </span>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400 transition-colors" />
+            </p>
+          </Link>
+
+          {/* Card 3: Active Ambulances */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group hover:border-slate-700 transition-all">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Fleet Ready</span>
@@ -170,11 +224,11 @@ export default function Dashboard() {
             </div>
             <p className="mt-3 text-xs text-slate-400 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              Live GPS tracking broadcast active
+              Live GPS broadcast active
             </p>
           </div>
 
-          {/* Card 3: OPD Wait Time */}
+          {/* Card 4: OPD Wait Time */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group hover:border-slate-700 transition-all">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg OPD Wait</span>
@@ -188,12 +242,12 @@ export default function Dashboard() {
             </div>
             <p className="mt-3 text-xs text-slate-400 flex items-center gap-1">
               <Users className="w-3.5 h-3.5 text-purple-400" />
-              Across {stats.totalQueues} active departments
+              Across {stats.totalQueues} departments
             </p>
           </div>
 
-          {/* Card 4: Hospital Patient Records */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group hover:border-slate-700 transition-all">
+          {/* Card 5: Hospital Patient Records */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group hover:border-slate-700 transition-all sm:col-span-2 lg:col-span-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Patient Records</span>
               <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
@@ -206,7 +260,7 @@ export default function Dashboard() {
             </div>
             <p className="mt-3 text-xs text-slate-400 flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              Protected by Tenant Isolation
+              Tenant Encrypted
             </p>
           </div>
         </div>
@@ -216,7 +270,23 @@ export default function Dashboard() {
           <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">
             Quick Actions
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+            <Link
+              to="/hospital/appointments"
+              className="flex items-center justify-between p-3.5 bg-slate-950/60 hover:bg-slate-800/60 border border-slate-800 hover:border-cyan-500/50 rounded-xl transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-cyan-500/20 text-cyan-400 group-hover:scale-110 transition-transform">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white">Appointments</p>
+                  <p className="text-[10px] text-slate-400">View bookings ({stats.totalAppointments})</p>
+                </div>
+              </div>
+              <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors" />
+            </Link>
+
             <Link
               to="/hospital/beds"
               className="flex items-center justify-between p-3.5 bg-slate-950/60 hover:bg-slate-800/60 border border-slate-800 hover:border-blue-500/50 rounded-xl transition-all group"
@@ -243,7 +313,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-white">Track Ambulance</p>
-                  <p className="text-[10px] text-slate-400">Update live GPS status</p>
+                  <p className="text-[10px] text-slate-400">Live GPS status</p>
                 </div>
               </div>
               <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors" />
@@ -259,7 +329,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-white">Manage OPD</p>
-                  <p className="text-[10px] text-slate-400">Call tokens & wait time</p>
+                  <p className="text-[10px] text-slate-400">Tokens & wait time</p>
                 </div>
               </div>
               <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-purple-400 transition-colors" />
@@ -274,8 +344,8 @@ export default function Dashboard() {
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">Add Patient</p>
-                  <p className="text-[10px] text-slate-400">New admission record</p>
+                  <p className="text-xs font-bold text-white">Patient Records</p>
+                  <p className="text-[10px] text-slate-400">Admission histories</p>
                 </div>
               </div>
               <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-amber-400 transition-colors" />
@@ -283,19 +353,94 @@ export default function Dashboard() {
 
             <Link
               to="/hospital/staff"
-              className="flex items-center justify-between p-3.5 bg-slate-950/60 hover:bg-slate-800/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl transition-all group"
+              className="flex items-center justify-between p-3.5 bg-slate-950/60 hover:bg-slate-800/60 border border-slate-800 hover:border-rose-500/50 rounded-xl transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform">
+                <div className="p-2 rounded-lg bg-rose-500/20 text-rose-400 group-hover:scale-110 transition-transform">
                   <UserPlus className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-white">Manage Staff</p>
-                  <p className="text-[10px] text-slate-400">Add nurses & doctors</p>
+                  <p className="text-[10px] text-slate-400">Staff accounts</p>
                 </div>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors" />
+              <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-rose-400 transition-colors" />
             </Link>
+          </div>
+        </div>
+
+        {/* Incoming Hospital Appointments Feed */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h4 className="font-bold text-sm text-white flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-cyan-400" />
+              Incoming Patient Appointments
+              <span className="text-[10px] font-bold bg-cyan-950 border border-cyan-800 text-cyan-300 px-2 py-0.5 rounded-full">
+                {stats.totalAppointments} Booked
+              </span>
+            </h4>
+            <Link
+              to="/hospital/appointments"
+              className="text-xs font-semibold text-cyan-400 hover:underline flex items-center gap-1"
+            >
+              View & Manage All <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="space-y-2.5">
+            {recentAppointments.length === 0 ? (
+              <div className="text-center py-6 border border-dashed border-slate-800 rounded-xl space-y-1.5">
+                <Calendar className="w-8 h-8 text-slate-600 mx-auto" />
+                <p className="text-xs text-slate-400">No appointments booked yet for this hospital.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {recentAppointments.map((apt) => {
+                  const isConfirmed = apt.status === 'confirmed';
+                  const isCompleted = apt.status === 'completed';
+                  const isCancelled = apt.status === 'cancelled';
+                  const aptDate = apt.appointment_date
+                    ? typeof apt.appointment_date === 'string'
+                      ? apt.appointment_date.split('T')[0]
+                      : new Date(apt.appointment_date).toLocaleDateString()
+                    : '—';
+
+                  return (
+                    <div
+                      key={apt.id}
+                      className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800/90 hover:border-slate-700 transition-all space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[11px] font-bold text-cyan-300 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/40">
+                          {apt.token_number}
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${
+                            isConfirmed
+                              ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                              : isCompleted
+                              ? 'bg-blue-500/15 border-blue-500/30 text-blue-400'
+                              : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                          }`}
+                        >
+                          {apt.status}
+                        </span>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-bold text-white">{apt.patient_name}</p>
+                        <p className="text-[11px] text-slate-400">{apt.patient_phone}</p>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-slate-300 pt-1 border-t border-slate-900">
+                        <span className="text-cyan-300 font-medium">{apt.department}</span>
+                        <span className="text-slate-400">{aptDate} • {apt.time_slot}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 

@@ -101,14 +101,24 @@ Route::prefix('emergency')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Appointment Booking Routes (Patient & Public)
+| Appointment Booking Routes
 |--------------------------------------------------------------------------
+|
+| POST /api/appointments  — Public: anyone (guest or logged-in) can book.
+| GET  /api/appointments  — Protected: returns only the authenticated
+|                          patient's own appointments (privacy isolation).
 */
 
-Route::get('/appointments', [AppointmentController::class, 'index']);
+// Public booking (guests can book without an account)
 Route::post('/appointments', [AppointmentController::class, 'store']);
-Route::get('/appointments/{id}', [AppointmentController::class, 'show']);
-Route::put('/appointments/{id}/cancel', [AppointmentController::class, 'cancel']);
+
+// Protected patient appointment views
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/appointments', [AppointmentController::class, 'index']);
+    Route::get('/appointments/{id}', [AppointmentController::class, 'show']);
+    Route::put('/appointments/{id}/cancel', [AppointmentController::class, 'cancel']);
+    Route::put('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -137,6 +147,10 @@ Route::middleware(['auth:sanctum', 'role:hospital_staff,hospital_admin,super_adm
 
         // Blood Bank stock update
         Route::put('/blood-banks/{id}', [BloodBankController::class, 'update']);
+
+        // Appointments (tenant-isolated)
+        Route::get('/hospitals/{id}/appointments', [AppointmentController::class, 'index']);
+        Route::put('/hospitals/{id}/appointments/{appointmentId}/status', [AppointmentController::class, 'updateStatus']);
 
         // Patient Records Management (tenant-isolated)
         Route::get('/patient-records', [PatientRecordController::class, 'index']);

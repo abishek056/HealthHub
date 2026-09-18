@@ -87,6 +87,7 @@ export default function EmergencyModal({ isOpen, onClose }) {
   const hospital = hospitalData?.hospital;
   const ambulanceContact = hospitalData?.ambulance_contact || '102';
   const alternatives = hospitalData?.alternative_hospitals || [];
+  const bloodGroupNote = hospitalData?.blood_group_note || null;
 
   // Estimated drive time (use routeInfo if available, else approximate ~2.5 min per km)
   const estimatedMins = routeInfo?.durationMinutes ?? (hospital?.distance_km ? Math.max(3, Math.round(hospital.distance_km * 2.5)) : null);
@@ -162,6 +163,14 @@ export default function EmergencyModal({ isOpen, onClose }) {
             </button>
           </div>
 
+          {/* Blood group availability note */}
+          {!loading && bloodGroupNote && (
+            <div className="text-xs bg-blue-500/10 border border-blue-500/30 text-blue-300 px-3 py-2 rounded-lg flex items-start gap-2">
+              <Droplet className="w-4 h-4 shrink-0 mt-0.5 text-blue-400" />
+              <span>{bloodGroupNote}</span>
+            </div>
+          )}
+
           {/* Location fallback notice */}
           {isLocationFallback && (
             <div className="text-xs bg-amber-500/10 border border-amber-500/30 text-amber-300 px-3 py-2 rounded-lg flex items-start gap-2">
@@ -220,6 +229,12 @@ export default function EmergencyModal({ isOpen, onClose }) {
                         <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-extrabold text-[11px] border border-emerald-500/30 flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                           ICU Ready
+                        </span>
+                      )}
+                      {selectedBloodGroup && hospital.has_blood_group && (
+                        <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-extrabold text-[11px] border border-rose-500/30 flex items-center gap-1">
+                          <Droplet className="w-3 h-3 text-rose-400" />
+                          {selectedBloodGroup} In Stock
                         </span>
                       )}
                     </div>
@@ -348,6 +363,12 @@ export default function EmergencyModal({ isOpen, onClose }) {
                               <span className={`px-1.5 py-0.5 rounded font-bold text-[10px] ${alt.icu_beds_available > 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700 text-slate-400'}`}>
                                 {alt.icu_beds_available} ICU
                               </span>
+                              {selectedBloodGroup && alt.has_blood_group && (
+                                <span className="px-1.5 py-0.5 rounded font-bold text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-0.5">
+                                  <Droplet className="w-2.5 h-2.5 text-rose-400" />
+                                  {selectedBloodGroup}
+                                </span>
+                              )}
                               <span className="text-slate-400 text-[10px]">{alt.distance_km} km away</span>
                             </div>
                           </div>

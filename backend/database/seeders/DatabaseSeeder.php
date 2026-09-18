@@ -31,16 +31,22 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Bir Hospital',
                 'address' => 'Mahabouddha, Kathmandu',
                 'phone' => '01-4221119',
+                'latitude' => 27.7056,
+                'longitude' => 85.3131,
             ]),
             Hospital::factory()->create([
                 'name' => 'Tribhuvan University Teaching Hospital',
                 'address' => 'Maharajgunj, Kathmandu',
                 'phone' => '01-4412303',
+                'latitude' => 27.7350,
+                'longitude' => 85.3304,
             ]),
             Hospital::factory()->create([
                 'name' => 'Patan Hospital',
                 'address' => 'Lagankhel, Lalitpur',
                 'phone' => '01-5522295',
+                'latitude' => 27.6685,
+                'longitude' => 85.3206,
             ]),
         ]);
 

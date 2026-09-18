@@ -36,8 +36,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       // Redirect based on what role they actually have
       if (role === 'super_admin') {
         return <Navigate to="/admin/dashboard" replace />;
-      } else if (role === 'hospital_admin') {
+      } else if (role === 'hospital_admin' || role === 'hospital_staff') {
         return <Navigate to="/hospital/dashboard" replace />;
+      } else if (role === 'patient') {
+        return <Navigate to="/user/dashboard" replace />;
       }
       
       return <Navigate to="/" replace />;
