@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,8 +12,13 @@ class Hospital extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'address', 'phone', 'email',
-        'latitude', 'longitude', 'is_active',
+        'name',
+        'address',
+        'phone',
+        'email',
+        'latitude',
+        'longitude',
+        'is_active',
     ];
 
     protected $casts = [
@@ -49,5 +55,17 @@ class Hospital extends Model
     public function patientRecords(): HasMany
     {
         return $this->hasMany(PatientRecord::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeWithAvailableBeds(Builder $query): Builder
+    {
+        return $query->whereHas('beds', function (Builder $q) {
+            $q->where('available_beds', '>', 0);
+        });
     }
 }

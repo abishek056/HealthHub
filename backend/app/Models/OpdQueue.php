@@ -11,12 +11,18 @@ class OpdQueue extends Model
     use HasFactory;
 
     protected $fillable = [
-        'hospital_id', 'department', 'current_token',
-        'estimated_wait_mins', 'crowd_level', 'last_updated',
+        'hospital_id',
+        'department',
+        'current_token',
+        'estimated_wait_mins',
+        'crowd_level',
+        'last_updated',
     ];
 
     protected $casts = [
         'last_updated' => 'datetime',
+        'current_token' => 'integer',
+        'estimated_wait_mins' => 'integer',
     ];
 
     public function hospital(): BelongsTo

@@ -11,8 +11,18 @@ class PatientRecord extends Model
     use HasFactory;
 
     protected $fillable = [
-        'hospital_id', 'patient_name', 'age', 'gender',
-        'phone', 'diagnosis', 'treatment', 'created_by',
+        'hospital_id',
+        'patient_name',
+        'age',
+        'gender',
+        'phone',
+        'diagnosis',
+        'treatment',
+        'created_by',
+    ];
+
+    protected $casts = [
+        'age' => 'integer',
     ];
 
     public function hospital(): BelongsTo
