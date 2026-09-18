@@ -4,15 +4,22 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/auth/Login';
 
+import Home from './pages/public/Home';
+import HospitalList from './pages/public/HospitalList';
+import HospitalDetail from './pages/public/HospitalDetail';
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Toaster position="top-right" />
         <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/hospitals" element={<HospitalList />} />
+          <Route path="/hospitals/:id" element={<HospitalDetail />} />
           <Route path="/login" element={<Login />} />
-          {/* Redirect all unknown routes to login for now */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
