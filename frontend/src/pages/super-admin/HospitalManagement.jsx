@@ -12,7 +12,6 @@ const EMPTY_FORM = {
   email: '',
   latitude: '',
   longitude: '',
-  total_beds: '',
 };
 
 function HospitalModal({ hospital, onClose, onSave }) {
@@ -41,7 +40,6 @@ function HospitalModal({ hospital, onClose, onSave }) {
     { key: 'email', label: 'Email', type: 'email' },
     { key: 'latitude', label: 'Latitude', type: 'number' },
     { key: 'longitude', label: 'Longitude', type: 'number' },
-    { key: 'total_beds', label: 'Total Beds', type: 'number' },
   ];
 
   return (
@@ -76,6 +74,11 @@ function HospitalModal({ hospital, onClose, onSave }) {
               </div>
             ))}
           </div>
+          {!isEdit && (
+            <p className="text-xs text-slate-400 mt-4 bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 leading-relaxed">
+              💡 Beds, ambulances, and OPD queues start empty by default. After creating the hospital, use the <strong className="text-emerald-400">Manage</strong> button on the hospital row to enter each ward and service details manually.
+            </p>
+          )}
           <div className="flex gap-3 mt-6">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors">
               Cancel

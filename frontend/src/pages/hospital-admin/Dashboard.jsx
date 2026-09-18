@@ -26,10 +26,10 @@ import {
   getPatientRecords,
   getHospitalAppointments,
 } from '../../services/adminService';
+import { useActiveHospital } from '../../hooks/useActiveHospital';
 
 export default function Dashboard() {
-  const { user } = useAuth();
-  const hospitalId = user?.hospital_id || 1;
+  const { hospitalId, currentHospital } = useActiveHospital();
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({

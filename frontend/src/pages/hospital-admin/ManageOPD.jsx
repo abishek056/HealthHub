@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useActiveHospital } from '../../hooks/useActiveHospital';
 import HospitalAdminLayout from '../../components/admin/HospitalAdminLayout';
 import OPDUpdateForm from '../../components/admin/OPDUpdateForm';
 import { getOpdQueues, updateOpdQueue, createOpdQueue, deleteOpdQueue } from '../../services/adminService';
@@ -7,8 +8,7 @@ import { RefreshCw, Users, Plus, X, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ManageOPD() {
-  const { user } = useAuth();
-  const hospitalId = user?.hospital_id || 1;
+  const { hospitalId, currentHospital } = useActiveHospital();
 
   const [queues, setQueues] = useState([]);
   const [loading, setLoading] = useState(true);

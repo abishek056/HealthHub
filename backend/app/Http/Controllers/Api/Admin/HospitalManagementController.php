@@ -60,8 +60,8 @@ class HospitalManagementController extends Controller
         ])->findOrFail($id);
 
         // Compute occupancy
-        $total     = $hospital->beds->sum('total');
-        $available = $hospital->beds->sum('available');
+        $total     = (int) $hospital->beds->sum('total_beds');
+        $available = (int) $hospital->beds->sum('available_beds');
         $hospital->occupancy_pct = $total > 0
             ? round((($total - $available) / $total) * 100, 1)
             : 0;

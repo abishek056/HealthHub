@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useActiveHospital } from '../../hooks/useActiveHospital';
 import HospitalAdminLayout from '../../components/admin/HospitalAdminLayout';
 import AmbulanceTracker from '../../components/admin/AmbulanceTracker';
 import AddAmbulanceForm from '../../components/admin/AddAmbulanceForm';
@@ -14,8 +15,7 @@ import { RefreshCw, Radio, Plus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function TrackAmbulance() {
-  const { user } = useAuth();
-  const hospitalId = user?.hospital_id || 1;
+  const { hospitalId, currentHospital } = useActiveHospital();
 
   const [ambulances, setAmbulances] = useState([]);
   const [hospitalCoords, setHospitalCoords] = useState(null);

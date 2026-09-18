@@ -26,10 +26,10 @@ import {
   Building2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useActiveHospital } from '../../hooks/useActiveHospital';
 
 export default function ManageStaff() {
-  const { user } = useAuth();
-  const hospitalId = user?.hospital_id || 1;
+  const { hospitalId, currentHospital } = useActiveHospital();
 
   const [staffList, setStaffList] = useState([]);
   const [loading, setLoading] = useState(true);

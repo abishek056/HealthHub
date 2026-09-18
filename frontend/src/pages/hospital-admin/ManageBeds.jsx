@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useActiveHospital } from '../../hooks/useActiveHospital';
 import HospitalAdminLayout from '../../components/admin/HospitalAdminLayout';
 import BedUpdateForm from '../../components/admin/BedUpdateForm';
 import { getBeds, updateBed, createBed, deleteBed } from '../../services/adminService';
@@ -15,8 +16,7 @@ const WARD_COLORS = {
 };
 
 export default function ManageBeds() {
-  const { user } = useAuth();
-  const hospitalId = user?.hospital_id || 1;
+  const { hospitalId, currentHospital } = useActiveHospital();
 
   const [beds, setBeds] = useState([]);
   const [loading, setLoading] = useState(true);

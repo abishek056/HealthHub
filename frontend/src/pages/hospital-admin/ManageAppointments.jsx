@@ -29,10 +29,10 @@ import {
   Plus,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useActiveHospital } from '../../hooks/useActiveHospital';
 
 export default function ManageAppointments() {
-  const { user } = useAuth();
-  const hospitalId = user?.hospital_id;
+  const { hospitalId, currentHospital } = useActiveHospital();
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useActiveHospital } from '../../hooks/useActiveHospital';
 import {
   LayoutDashboard,
   BedDouble,
@@ -16,6 +17,7 @@ import {
   ChevronDown,
   ShieldCheck,
   Calendar,
+  Building2,
 } from 'lucide-react';
 
 const navLinks = [
@@ -30,10 +32,13 @@ const navLinks = [
 
 export default function HospitalAdminLayout({ children, title, subtitle }) {
   const { user, logout } = useAuth();
+  const { hospitalId, currentHospital, hospitals, isSuperAdmin, changeHospital } = useActiveHospital();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const getNavHref = (to) => (isSuperAdmin && hospitalId ? `${to}?hospital_id=${hospitalId}` : to);
 
   const handleLogout = () => {
     logout();
@@ -75,7 +80,7 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
               {navLinks.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
-                  to={to}
+                  to={getNavHref(to)}
                   className={({ isActive }) =>
                     `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                       isActive
@@ -92,11 +97,30 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
 
             {/* Right Side */}
             <div className="flex items-center gap-2 ml-auto">
-              {/* Live badge */}
-              <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 bg-slate-800/60 border border-slate-700 px-2.5 py-1 rounded-lg">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Hospital #{user?.hospital_id || 1}</span>
-              </div>
+              {/* Hospital Switcher for Super Admin or Badge for Staff */}
+              {isSuperAdmin ? (
+                <div className="flex items-center gap-1.5 bg-slate-800/90 border border-indigo-500/40 rounded-xl px-2.5 py-1 text-xs shadow-sm">
+                  <Building2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                  <select
+                    id="super-admin-hospital-select"
+                    value={hospitalId}
+                    onChange={(e) => changeHospital(e.target.value)}
+                    className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer pr-1"
+                    title="Switch Hospital View"
+                  >
+                    {hospitals.map((h) => (
+                      <option key={h.id} value={h.id} className="bg-slate-900 text-white">
+                        {h.name} (#{h.id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 bg-slate-800/60 border border-slate-700 px-2.5 py-1 rounded-lg">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>{currentHospital?.name || `Hospital #${hospitalId}`}</span>
+                </div>
+              )}
 
               {/* Public portal link */}
               <NavLink
@@ -191,7 +215,7 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
               {navLinks.map(({ to, label, icon: Icon, color }) => (
                 <NavLink
                   key={to}
-                  to={to}
+                  to={getNavHref(to)}
                   onClick={() => setMobileMenuOpen(false)}
                   className={({ isActive }) =>
                     `flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl text-[10px] font-semibold transition-all ${
