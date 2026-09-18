@@ -38,7 +38,7 @@ const Login = () => {
       // Otherwise redirect based on their role
       if (userData.role === 'super_admin') {
         navigate('/admin/dashboard', { replace: true });
-      } else if (userData.role === 'hospital_admin') {
+      } else if (userData.role === 'hospital_admin' || userData.role === 'hospital_staff') {
         navigate('/hospital/dashboard', { replace: true });
       } else {
         navigate('/', { replace: true }); // Default fallback
