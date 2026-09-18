@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BedController;
 use App\Http\Controllers\Api\BloodBankController;
 use App\Http\Controllers\Api\BloodDonorController;
+use App\Http\Controllers\Api\EmergencyController;
 use App\Http\Controllers\Api\HospitalController;
 use App\Http\Controllers\Api\OPDQueueController;
 use App\Http\Controllers\Api\Admin\DashboardController;
@@ -79,6 +80,20 @@ Route::get('/blood-donors', [BloodDonorController::class, 'index']);
 Route::get('/blood-donors/{id}', [BloodDonorController::class, 'show']);
 Route::post('/blood-donors', [BloodDonorController::class, 'store']);
 Route::post('/blood-donors/request', [BloodDonorController::class, 'requestDonor']);
+
+/*
+|--------------------------------------------------------------------------
+| Emergency Routes (public — no auth required)
+|--------------------------------------------------------------------------
+|
+| GET /api/emergency/find-nearest-hospital
+|   Params: latitude, longitude, blood_group (optional), radius (optional, km)
+|   Returns nearest hospital with ICU beds + up to 4 alternatives
+*/
+
+Route::prefix('emergency')->group(function () {
+    Route::get('/find-nearest-hospital', [EmergencyController::class, 'findNearestHospital']);
+});
 
 /*
 |--------------------------------------------------------------------------

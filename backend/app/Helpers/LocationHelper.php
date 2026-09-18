@@ -90,4 +90,33 @@ class LocationHelper
             * sin(radians({$latColumn}))
         ))";
     }
+
+    /**
+     * Build a Google Maps directions/search URL.
+     *
+     * @param  float|null  $destLat
+     * @param  float|null  $destLon
+     * @param  float|null  $originLat  If provided, returns a directions link.
+     * @param  float|null  $originLon
+     * @return string|null
+     */
+    public static function buildGoogleMapsUrl(
+        ?float $destLat,
+        ?float $destLon,
+        ?float $originLat = null,
+        ?float $originLon = null
+    ): ?string {
+        if ($destLat === null || $destLon === null) {
+            return null;
+        }
+
+        $destination = "{$destLat},{$destLon}";
+
+        if ($originLat !== null && $originLon !== null) {
+            $origin = "{$originLat},{$originLon}";
+            return "https://www.google.com/maps/dir/{$origin}/{$destination}";
+        }
+
+        return "https://www.google.com/maps/search/?api=1&query={$destination}";
+    }
 }
