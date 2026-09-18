@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
 
     // Public
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
 
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
@@ -52,6 +52,7 @@ Route::get('/hospitals/{id}/ambulances/{ambulanceId}', [AmbulanceController::cla
 
 Route::get('/hospitals/{id}/opd', [OPDQueueController::class, 'index']);
 Route::get('/hospitals/{id}/opd/{queueId}', [OPDQueueController::class, 'show']);
+Route::post('/hospitals/{id}/opd/book', [OPDQueueController::class, 'bookToken']);
 
 /*
 |--------------------------------------------------------------------------
@@ -77,7 +78,6 @@ Route::middleware(['auth:sanctum', 'role:hospital_staff,hospital_admin,super_adm
 
         // OPD
         Route::put('/hospitals/{id}/opd', [OPDQueueController::class, 'update']);
-        Route::post('/hospitals/{id}/opd/book', [OPDQueueController::class, 'bookToken']);
     });
 
 /*

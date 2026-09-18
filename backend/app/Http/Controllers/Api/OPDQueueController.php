@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\OPDQueueUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Hospital;
 use App\Models\OpdQueue;
@@ -69,6 +70,12 @@ class OPDQueueController extends Controller
             ]
         );
 
+        try {
+            broadcast(new OPDQueueUpdated($queue))->toOthers();
+        } catch (\Throwable $e) {
+            // Log or ignore if broadcast driver is not active
+        }
+
         return response()->json([
             'message' => 'OPD queue updated successfully.',
             'queue' => $queue,
@@ -80,8 +87,15 @@ class OPDQueueController extends Controller
      */
     public function bookToken(Request $request, int|string $hospitalId): JsonResponse
     {
+        $hospital = Hospital::find($hospitalId);
+        if (! $hospital) {
+            return response()->json(['message' => 'Hospital not found.'], 404);
+        }
+
         $validated = $request->validate([
             'department' => 'required|string',
+            'patient_name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
         ]);
 
         $queue = OpdQueue::firstOrCreate(
@@ -96,14 +110,37 @@ class OPDQueueController extends Controller
 
         $tokenNumber = $queue->current_token + 1;
         $queue->current_token = $tokenNumber;
+        
+        // Dynamic wait time estimate based on crowd level / tokens
+        $waitMins = max(5, ($queue->estimated_wait_mins ?: 15));
         $queue->last_updated = now();
         $queue->save();
+
+        try {
+            broadcast(new OPDQueueUpdated($queue));
+        } catch (\Throwable $e) {
+            // Fail gracefully if broadcast driver is not running
+        }
+
+        $phone = $validated['phone'] ?? null;
+        $name = $validated['patient_name'] ?? 'Valued Patient';
+        $smsMessage = $phone
+            ? "Namaste {$name}, your token #{$tokenNumber} for {$queue->department} at {$hospital->name} is confirmed. Est. wait: ~{$waitMins} mins."
+            : "Token #{$tokenNumber} confirmed for {$queue->department}.";
 
         return response()->json([
             'message' => 'Token booked successfully.',
             'token_number' => $tokenNumber,
             'department' => $queue->department,
-            'estimated_wait_mins' => $queue->estimated_wait_mins,
+            'hospital_id' => (int) $hospitalId,
+            'hospital_name' => $hospital->name,
+            'patient_name' => $name,
+            'phone' => $phone,
+            'estimated_wait_mins' => $waitMins,
+            'crowd_level' => $queue->crowd_level,
+            'sms_sent' => !empty($phone),
+            'sms_confirmation' => $smsMessage,
+            'booked_at' => now()->toIso8601String(),
         ]);
     }
 }

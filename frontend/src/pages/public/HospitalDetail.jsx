@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getHospitalById } from '../../services/hospitalService';
+import OPDQueue from '../../components/opd/OPDQueue';
 
 const HospitalDetail = () => {
   const { id } = useParams();
@@ -114,25 +115,10 @@ const HospitalDetail = () => {
              </div>
           </section>
 
-          {/* OPD Queue */}
-          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center">
-               <svg className="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-               <h2 className="text-lg font-bold text-gray-900">OPD Live Queue</h2>
-             </div>
-             <div className="p-0">
-               <ul className="divide-y divide-gray-200">
-                 {Object.entries(hospital.opd_queue).map(([dept, waiting]) => (
-                   <li key={dept} className="px-6 py-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
-                     <span className="text-sm font-medium text-gray-900">{dept}</span>
-                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                       {waiting} waiting
-                     </span>
-                   </li>
-                 ))}
-               </ul>
-             </div>
-          </section>
+          {/* OPD Live Queue & Token Booking */}
+          <div className="col-span-1 lg:col-span-2">
+            <OPDQueue hospitalId={hospital.id} hospitalName={hospital.name} />
+          </div>
         </div>
 
         {/* Ambulances */}
