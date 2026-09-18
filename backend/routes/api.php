@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\AmbulanceController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BedController;
+use App\Http\Controllers\Api\BloodBankController;
+use App\Http\Controllers\Api\BloodDonorController;
 use App\Http\Controllers\Api\HospitalController;
 use App\Http\Controllers\Api\OPDQueueController;
 use Illuminate\Support\Facades\Route;
@@ -56,6 +58,27 @@ Route::post('/hospitals/{id}/opd/book', [OPDQueueController::class, 'bookToken']
 
 /*
 |--------------------------------------------------------------------------
+| Public Blood Bank & Donor Routes (no auth required)
+|--------------------------------------------------------------------------
+|
+| GET  /api/blood-banks                  - list all blood banks (filter: blood_group, lat, lon)
+| GET  /api/blood-banks/{id}             - show blood bank details
+| GET  /api/blood-donors                 - list active donors (filter: blood_group, lat, lon)
+| GET  /api/blood-donors/{id}            - show donor profile
+| POST /api/blood-donors                 - register as donor
+| POST /api/blood-donors/request         - request blood from nearest eligible donors
+*/
+
+Route::get('/blood-banks', [BloodBankController::class, 'index']);
+Route::get('/blood-banks/{id}', [BloodBankController::class, 'show']);
+
+Route::get('/blood-donors', [BloodDonorController::class, 'index']);
+Route::get('/blood-donors/{id}', [BloodDonorController::class, 'show']);
+Route::post('/blood-donors', [BloodDonorController::class, 'store']);
+Route::post('/blood-donors/request', [BloodDonorController::class, 'requestDonor']);
+
+/*
+|--------------------------------------------------------------------------
 | Protected routes (hospital_staff only + tenant isolation)
 |--------------------------------------------------------------------------
 |
@@ -78,6 +101,9 @@ Route::middleware(['auth:sanctum', 'role:hospital_staff,hospital_admin,super_adm
 
         // OPD
         Route::put('/hospitals/{id}/opd', [OPDQueueController::class, 'update']);
+
+        // Blood Bank stock update
+        Route::put('/blood-banks/{id}', [BloodBankController::class, 'update']);
     });
 
 /*
