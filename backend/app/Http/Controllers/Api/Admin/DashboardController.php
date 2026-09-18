@@ -25,8 +25,8 @@ class DashboardController extends Controller
         $activeHospitals = Hospital::where('is_active', true)->count();
 
         $bedStats = Bed::selectRaw('
-            SUM(total)     AS total_beds,
-            SUM(available) AS available_beds
+            SUM(total_beds)     AS total_beds,
+            SUM(available_beds) AS available_beds
         ')->first();
 
         $totalBeds     = (int) ($bedStats->total_beds     ?? 0);
@@ -35,15 +35,15 @@ class DashboardController extends Controller
         $occupancyPct  = $totalBeds > 0 ? round(($occupiedBeds / $totalBeds) * 100, 1) : 0;
 
         $ambulanceStats = Ambulance::selectRaw('
-            COUNT(*)                                          AS total,
-            SUM(status = "available")                         AS available,
-            SUM(status = "on_call")                           AS on_call
+            COUNT(*)               AS total,
+            SUM(is_available = 1)  AS available,
+            SUM(is_on_call = 1)    AS on_call
         ')->first();
 
         $opdStats = OpdQueue::selectRaw('
-            COUNT(*)              AS total_queues,
-            SUM(current_token)    AS total_tokens_issued,
-            ROUND(AVG(wait_time), 1) AS avg_wait_time_mins
+            COUNT(*)                    AS total_queues,
+            SUM(current_token)          AS total_tokens_issued,
+            ROUND(AVG(estimated_wait_mins), 1) AS avg_wait_time_mins
         ')->first();
 
         $userStats = User::selectRaw('
@@ -53,7 +53,7 @@ class DashboardController extends Controller
             SUM(role = "patient")              AS patients
         ')->first();
 
-        $donorCount = BloodDonor::where('is_active', true)->count();
+        $donorCount = BloodDonor::where('is_available', true)->count();
 
         // Blood group distribution
         $bloodStock = DB::table('blood_banks')
@@ -109,8 +109,8 @@ class DashboardController extends Controller
             ->where('is_active', true)
             ->get()
             ->map(function ($hospital) {
-                $total     = $hospital->beds->sum('total');
-                $available = $hospital->beds->sum('available');
+                $total     = $hospital->beds->sum('total_beds');
+                $available = $hospital->beds->sum('available_beds');
                 $occupied  = $total - $available;
                 $pct       = $total > 0 ? round(($occupied / $total) * 100, 1) : 0;
 

@@ -27,7 +27,7 @@ class BloodDonorController extends Controller
         ]);
 
         $query = BloodDonor::query()
-            ->where('is_active', true)
+            ->where('is_available', true)
             ->when($request->blood_group, fn ($q) => $q->where('blood_group', $request->blood_group))
             ->when($request->filled(['latitude', 'longitude']), function ($q) use ($request) {
                 $lat    = (float) $request->latitude;
@@ -101,7 +101,7 @@ class BloodDonorController extends Controller
         $distanceExpr = LocationHelper::haversineSelectRaw($lat, $lon);
 
         $donors = BloodDonor::query()
-            ->where('is_active', true)
+            ->where('is_available', true)
             ->where('blood_group', $validated['blood_group'])
             ->selectRaw("*, {$distanceExpr} AS distance_km")
             ->having('distance_km', '<=', $radius)
