@@ -16,15 +16,15 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = React.useCallback(async () => {
     try {
-      const response = await api.get('/user');
-      const userData = response.data;
+      const response = await api.get('/auth/me');
+      const userData = response.data.user;
       setUser(userData);
       setRole(userData.role);
       localStorage.setItem('auth_user', JSON.stringify(userData));
     } catch (error) {
       // 401 will be handled by the interceptor
       if (error.response?.status !== 401) {
-         console.error("Auth check failed", error);
+        console.error('Auth check failed', error);
       }
     }
   }, []);
@@ -32,10 +32,10 @@ export const AuthProvider = ({ children }) => {
   const logout = React.useCallback(async () => {
     try {
       if (isAuthenticated) {
-        await api.post('/logout');
+        await api.post('/auth/logout');
       }
     } catch (error) {
-      console.error("Logout API failed", error);
+      console.error('Logout API failed', error);
     } finally {
       // Always clean up local state
       setToken(null);
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('auth_token');
       const storedUser = localStorage.getItem('auth_user');
-      
+
       if (storedToken && storedUser) {
         try {
           const parsedUser = JSON.parse(storedUser);
@@ -61,11 +61,11 @@ export const AuthProvider = ({ children }) => {
           setUser(parsedUser);
           setRole(parsedUser.role);
           setIsAuthenticated(true);
-          
+
           // Optionally verify token with backend
           await checkAuth();
         } catch (error) {
-          console.error("Failed to parse stored user", error);
+          console.error('Failed to parse stored user', error);
           logout();
         }
       }
@@ -77,30 +77,32 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, selectedRole) => {
     try {
-      const response = await api.post('/login', { 
-        email, 
+      const response = await api.post('/auth/login', {
+        email,
         password,
-        role: selectedRole
+        role: selectedRole,
       });
-      
+
       const { token: newToken, user: userData } = response.data;
-      
+
       if (!newToken || !userData) {
-        throw new Error("Invalid response from server");
+        throw new Error('Invalid response from server');
       }
 
       setToken(newToken);
       setUser(userData);
       setRole(userData.role);
       setIsAuthenticated(true);
-      
+
       localStorage.setItem('auth_token', newToken);
       localStorage.setItem('auth_user', JSON.stringify(userData));
-      
+
       toast.success('Login successful!');
       return userData;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
+      toast.error(
+        error.response?.data?.message || 'Login failed. Please check your credentials.'
+      );
       throw error;
     }
   };
@@ -113,7 +115,7 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     login,
     logout,
-    checkAuth
+    checkAuth,
   };
 
   return (
