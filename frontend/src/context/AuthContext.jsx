@@ -4,6 +4,7 @@ import api from '../services/api';
 
 const AuthContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
@@ -12,6 +13,40 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const checkAuth = React.useCallback(async () => {
+    try {
+      const response = await api.get('/user');
+      const userData = response.data;
+      setUser(userData);
+      setRole(userData.role);
+      localStorage.setItem('auth_user', JSON.stringify(userData));
+    } catch (error) {
+      // 401 will be handled by the interceptor
+      if (error.response?.status !== 401) {
+         console.error("Auth check failed", error);
+      }
+    }
+  }, []);
+
+  const logout = React.useCallback(async () => {
+    try {
+      if (isAuthenticated) {
+        await api.post('/logout');
+      }
+    } catch (error) {
+      console.error("Logout API failed", error);
+    } finally {
+      // Always clean up local state
+      setToken(null);
+      setUser(null);
+      setRole(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      toast.success('Logged out successfully');
+    }
+  }, [isAuthenticated]);
 
   // Initialize auth state from local storage on mount
   useEffect(() => {
@@ -38,33 +73,14 @@ export const AuthProvider = ({ children }) => {
     };
 
     initializeAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      const response = await api.get('/user');
-      const userData = response.data;
-      setUser(userData);
-      setRole(userData.role);
-      localStorage.setItem('auth_user', JSON.stringify(userData));
-    } catch (error) {
-      // 401 will be handled by the interceptor
-      if (error.response?.status !== 401) {
-         console.error("Auth check failed", error);
-      }
-    }
-  };
+  }, [checkAuth, logout]);
 
   const login = async (email, password, selectedRole) => {
     try {
-      // In a real Laravel app using Sanctum, we first get CSRF cookie if using session auth,
-      // but since we are using tokens, we just call the token login endpoint.
-      // E.g., api.post('/login', { email, password, role })
-      
       const response = await api.post('/login', { 
         email, 
         password,
-        role: selectedRole // Pass selected role if your backend requires it
+        role: selectedRole
       });
       
       const { token: newToken, user: userData } = response.data;
@@ -73,13 +89,11 @@ export const AuthProvider = ({ children }) => {
         throw new Error("Invalid response from server");
       }
 
-      // Update state
       setToken(newToken);
       setUser(userData);
       setRole(userData.role);
       setIsAuthenticated(true);
       
-      // Persist
       localStorage.setItem('auth_token', newToken);
       localStorage.setItem('auth_user', JSON.stringify(userData));
       
@@ -88,25 +102,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
       throw error;
-    }
-  };
-
-  const logout = async () => {
-    try {
-      if (isAuthenticated) {
-        await api.post('/logout');
-      }
-    } catch (error) {
-      console.error("Logout API failed", error);
-    } finally {
-      // Always clean up local state
-      setToken(null);
-      setUser(null);
-      setRole(null);
-      setIsAuthenticated(false);
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_user');
-      toast.success('Logged out successfully');
     }
   };
 
