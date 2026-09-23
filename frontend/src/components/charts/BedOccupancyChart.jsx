@@ -13,13 +13,13 @@ import {
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 shadow-xl">
-        <p className="text-slate-400 text-xs mb-2">{label}</p>
+      <div className="bg-white border border-[#c8eedc] rounded-xl p-3 shadow-xl">
+        <p className="text-slate-500 text-xs mb-2 font-medium">{label}</p>
         {payload.map((entry, i) => (
           <div key={i} className="flex items-center gap-2 text-sm">
             <span className="w-2 h-2 rounded-full" style={{ background: entry.color }} />
-            <span className="text-slate-300">{entry.name}:</span>
-            <span className="text-white font-semibold">{entry.value}%</span>
+            <span className="text-slate-600">{entry.name}:</span>
+            <span className="text-slate-900 font-semibold">{entry.value}%</span>
           </div>
         ))}
       </div>
@@ -59,13 +59,13 @@ export default function BedOccupancyChart({ data }) {
             <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-        <XAxis dataKey="date" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-        <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} unit="%" domain={[0, 100]} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+        <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} unit="%" domain={[0, 100]} />
         <Tooltip content={<CustomTooltip />} />
         <Legend
           wrapperStyle={{ paddingTop: 16 }}
-          formatter={(val) => <span className="text-slate-400 text-xs">{val}</span>}
+          formatter={(val) => <span className="text-slate-600 text-xs font-medium">{val}</span>}
         />
         <Area type="monotone" dataKey="ICU" stroke="#f43f5e" strokeWidth={2} fill="url(#icuGrad)" dot={false} />
         <Area type="monotone" dataKey="General" stroke="#6366f1" strokeWidth={2} fill="url(#generalGrad)" dot={false} />

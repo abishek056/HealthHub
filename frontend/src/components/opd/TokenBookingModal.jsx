@@ -145,7 +145,7 @@ const TokenBookingModal = ({
               )}
 
               {/* Patient Details Summary */}
-              <div className="grid grid-cols-2 gap-2 text-left text-xs bg-gray-50 rounded-xl p-3 border border-gray-100">
+              <div className="grid grid-cols-2 gap-2 text-left text-xs bg-[#f7fcf9] rounded-xl p-3 border border-[#c8eedc]">
                 <div>
                   <span className="text-gray-400 block">Patient</span>
                   <span className="font-semibold text-gray-800 truncate block">{bookingResult.patient_name}</span>
@@ -165,7 +165,7 @@ const TokenBookingModal = ({
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-[#c8eedc] text-slate-700 font-semibold text-sm hover:bg-[#f0fbf5] transition-colors flex items-center justify-center gap-1.5"
                 >
                   <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -251,7 +251,7 @@ const TokenBookingModal = ({
                   <input
                     type="number"
                     min="1"
-                    max="120"
+                    max="100"
                     placeholder="e.g. 35"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     value={age}
@@ -281,7 +281,7 @@ const TokenBookingModal = ({
                   type="button"
                   onClick={handleModalClose}
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-[#c8eedc] text-slate-600 font-semibold text-sm hover:bg-[#f0fbf5] transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

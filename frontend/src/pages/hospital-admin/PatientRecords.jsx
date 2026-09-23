@@ -80,15 +80,15 @@ export default function PatientRecords() {
     >
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <ShieldAlert className="w-4 h-4 text-emerald-400" />
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <ShieldAlert className="w-4 h-4 text-[#167a68]" />
             <span>Strict tenant isolation ensures staff can only access patients belonging to this facility</span>
           </div>
 
           <button
             onClick={() => fetchRecords(currentPage, searchQuery)}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#c8eedc] text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             Refresh

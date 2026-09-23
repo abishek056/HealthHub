@@ -17,6 +17,7 @@ import TrackAmbulance from './pages/hospital-admin/TrackAmbulance';
 import ManageOPD from './pages/hospital-admin/ManageOPD';
 import PatientRecords from './pages/hospital-admin/PatientRecords';
 import ManageStaff from './pages/hospital-admin/ManageStaff';
+import RegisterPatient from './pages/hospital-admin/RegisterPatient';
 
 import SuperAdminDashboard from './pages/super-admin/Dashboard';
 import HospitalManagement from './pages/super-admin/HospitalManagement';
@@ -110,6 +111,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['hospital_admin', 'super_admin']}>
                 <ManageStaff />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hospital/register-patient"
+            element={
+              <ProtectedRoute allowedRoles={['hospital_admin', 'hospital_staff', 'super_admin']}>
+                <RegisterPatient />
               </ProtectedRoute>
             }
           />

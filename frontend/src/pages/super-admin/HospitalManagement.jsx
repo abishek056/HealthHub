@@ -45,48 +45,48 @@ function HospitalModal({ hospital, onClose, onSave }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
       <div
-        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl"
+        className="bg-white border border-[#c8eedc] rounded-2xl w-full max-w-lg shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#c8eedc]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/25 flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-indigo-400" />
+            <div className="w-8 h-8 rounded-xl bg-[#dff5ea] border border-[#c8eedc] flex items-center justify-center">
+              <Building2 className="w-4 h-4 text-[#167a68]" />
             </div>
-            <h2 className="text-white font-semibold">{isEdit ? 'Edit Hospital' : 'Add New Hospital'}</h2>
+            <h2 className="text-slate-900 font-semibold">{isEdit ? 'Edit Hospital' : 'Add New Hospital'}</h2>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all">
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-emerald-50 text-slate-500 hover:text-slate-900 transition-all">
             <X className="w-4 h-4" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-2 gap-4">
             {fields.map(({ key, label, type = 'text', required, colSpan }) => (
-              <div key={key} className={colSpan === 2 ? 'col-span-2' : ''}>
-                <label className="block text-slate-400 text-xs font-medium mb-1.5">{label}</label>
+               <div key={key} className={colSpan === 2 ? 'col-span-2' : ''}>
+                <label className="block text-slate-500 text-xs font-medium mb-1.5">{label}</label>
                 <input
                   type={type}
                   required={required}
                   value={form[key] ?? ''}
                   onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="w-full bg-[#fbfdfc] border border-[#c8eedc] rounded-xl px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#167a68] transition-colors"
                 />
               </div>
             ))}
           </div>
           {!isEdit && (
-            <p className="text-xs text-slate-400 mt-4 bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 leading-relaxed">
-              💡 Beds, ambulances, and OPD queues start empty by default. After creating the hospital, use the <strong className="text-emerald-400">Manage</strong> button on the hospital row to enter each ward and service details manually.
+            <p className="text-xs text-[#0b4d3c] mt-4 bg-[#dff5ea]/60 p-3 rounded-xl border border-[#c8eedc] leading-relaxed">
+              💡 Beds, ambulances, and OPD queues start empty by default. After creating the hospital, use the <strong className="text-[#167a68]">Manage</strong> button on the hospital row to enter each ward and service details manually.
             </p>
           )}
           <div className="flex gap-3 mt-6">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors">
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-sm font-medium transition-colors cursor-pointer">
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium transition-colors"
+              className="flex-1 px-4 py-2.5 rounded-xl bg-[#167a68] hover:bg-[#116253] disabled:opacity-60 text-white text-sm font-medium transition-colors cursor-pointer shadow-sm"
             >
               {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Hospital'}
             </button>
@@ -114,24 +114,24 @@ function DeleteConfirmModal({ hospital, onClose, onConfirm }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white border border-[#c8eedc] rounded-2xl w-full max-w-sm p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/25 flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
+          <div className="w-10 h-10 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
           </div>
           <div>
-            <h2 className="text-white font-semibold">Delete Hospital</h2>
-            <p className="text-slate-400 text-sm">This action is irreversible</p>
+            <h2 className="text-slate-900 font-semibold">Delete Hospital</h2>
+            <p className="text-slate-500 text-sm">This action is irreversible</p>
           </div>
         </div>
-        <p className="text-slate-300 text-sm mb-6">
+        <p className="text-slate-600 text-sm mb-6">
           Are you sure you want to delete <strong>{hospital.name}</strong>? All associated data will be removed.
         </p>
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors">
+          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-sm font-medium transition-colors cursor-pointer">
             Cancel
           </button>
-          <button onClick={handleDelete} disabled={deleting} className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white text-sm font-medium transition-colors">
+          <button onClick={handleDelete} disabled={deleting} className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white text-sm font-medium transition-colors cursor-pointer">
             {deleting ? 'Deleting…' : 'Delete'}
           </button>
         </div>
@@ -190,12 +190,12 @@ export default function HospitalManagement() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Hospital Management</h1>
-          <p className="text-slate-400 text-sm mt-1">{hospitals.length} hospitals registered</p>
+          <h1 className="text-2xl font-bold text-slate-900">Hospital Management</h1>
+          <p className="text-slate-500 text-sm mt-1">{hospitals.length} hospitals registered</p>
         </div>
         <button
           onClick={() => setModal({ type: 'add' })}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors shadow-lg shadow-indigo-500/20"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#167a68] hover:bg-[#116253] text-white text-sm font-medium transition-colors shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           Add Hospital
@@ -210,17 +210,17 @@ export default function HospitalManagement() {
           placeholder="Search hospitals by name or location…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-slate-900/60 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+          className="w-full bg-white border border-[#c8eedc] rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#167a68] transition-colors"
         />
         {search && (
-          <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+          <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900">
             <X className="w-4 h-4" />
           </button>
         )}
       </div>
 
       {/* Table */}
-      <div className="bg-slate-900/60 rounded-2xl border border-slate-800 p-6">
+      <div className="bg-white rounded-2xl border border-[#c8eedc] p-6">
         <HospitalTable
           hospitals={filtered}
           loading={loading}

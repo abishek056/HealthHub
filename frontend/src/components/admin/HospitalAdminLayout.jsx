@@ -1,44 +1,54 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { useActiveHospital } from '../../hooks/useActiveHospital';
 import {
   LayoutDashboard,
+  CalendarCheck,
   BedDouble,
-  Truck,
-  Users,
+  Ambulance,
+  Clock,
   FileText,
+  Users,
   LogOut,
   Hospital,
-  UserPlus,
+  Building2,
   ExternalLink,
+  ChevronDown,
   Menu,
   X,
-  ChevronDown,
   ShieldCheck,
-  Calendar,
-  Building2,
+  UserPlus,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { useActiveHospital } from '../../hooks/useActiveHospital';
 
-const navLinks = [
-  { to: '/hospital/dashboard',    label: 'Dashboard',    icon: LayoutDashboard, color: 'text-sky-400' },
-  { to: '/hospital/appointments', label: 'Appointments', icon: Calendar,        color: 'text-cyan-400' },
-  { to: '/hospital/beds',         label: 'Beds',         icon: BedDouble,      color: 'text-blue-400' },
-  { to: '/hospital/ambulances',   label: 'Ambulances',   icon: Truck,          color: 'text-emerald-400' },
-  { to: '/hospital/opd',          label: 'OPD Queue',    icon: Users,          color: 'text-purple-400' },
-  { to: '/hospital/patients',     label: 'Patients',     icon: FileText,       color: 'text-amber-400' },
-  { to: '/hospital/staff',        label: 'Staff',        icon: UserPlus,       color: 'text-rose-400' },
+const NAV_LINKS = [
+  { to: '/hospital/dashboard',         label: 'Dashboard',       icon: LayoutDashboard, color: 'text-emerald-700' },
+  { to: '/hospital/appointments',      label: 'Appointments',    icon: CalendarCheck,   color: 'text-teal-700' },
+  { to: '/hospital/beds',              label: 'Beds',            icon: BedDouble,       color: 'text-emerald-700' },
+  { to: '/hospital/ambulances',        label: 'Ambulances',      icon: Ambulance,       color: 'text-rose-600' },
+  { to: '/hospital/opd',              label: 'OPD Queue',        icon: Clock,           color: 'text-emerald-700' },
+  { to: '/hospital/patients',          label: 'Patients',        icon: FileText,        color: 'text-teal-700' },
+  { to: '/hospital/register-patient', label: 'Register Patient', icon: UserPlus,        color: 'text-blue-600' },
+  { to: '/hospital/staff',             label: 'Staff',           icon: Users,           color: 'text-emerald-700', adminOnly: true },
 ];
 
 export default function HospitalAdminLayout({ children, title, subtitle }) {
   const { user, logout } = useAuth();
-  const { hospitalId, currentHospital, hospitals, isSuperAdmin, changeHospital } = useActiveHospital();
   const navigate = useNavigate();
   const location = useLocation();
+  const { hospitalId, hospitals, changeHospital, currentHospital } = useActiveHospital();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  const getNavHref = (to) => (isSuperAdmin && hospitalId ? `${to}?hospital_id=${hospitalId}` : to);
+  const isSuperAdmin = user?.role === 'super_admin';
+  const isHospitalAdmin = user?.role === 'hospital_admin';
+
+  const navLinks = NAV_LINKS.filter((l) => !l.adminOnly || isHospitalAdmin || isSuperAdmin);
+
+  const getNavHref = (to) => {
+    return isSuperAdmin && hospitalId ? `${to}?hospitalId=${hospitalId}` : to;
+  };
 
   const handleLogout = () => {
     logout();
@@ -52,40 +62,41 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
   const activeLink = navLinks.find((l) => location.pathname.startsWith(l.to));
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden">
-
+    <div className="min-h-screen bg-[#f8fdfa] text-slate-800 flex flex-col font-sans overflow-x-hidden">
       {/* ── Top Navigation Bar ── */}
-      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800 shadow-xl shadow-slate-950/60">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-xs">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center h-14 gap-4">
+          <div className="flex items-center h-16 gap-4">
 
             {/* Logo */}
             <NavLink
               to="/hospital/dashboard"
-              className="flex items-center gap-2.5 shrink-0 mr-2"
+              className="flex items-center gap-2.5 shrink-0 mr-3"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-950">
-                <Hospital className="w-5 h-5 text-white" />
-              </div>
+              <img
+                src="/healthhub-icon.png"
+                alt="HealthHub"
+                className="w-8 h-8 object-contain"
+              />
               <div className="hidden sm:block">
-                <span className="font-black text-sm tracking-wide text-white">HealthHub</span>
-                <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-1.5 py-0.5 rounded">
-                  Staff
+                <span className="font-bold text-sm tracking-wide text-[#0b4d3c]">HealthHub</span>
+                <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-[#dff5ea] border border-[#c2ebd5] px-2 py-0.5 rounded-full">
+                  Hospital Desk
                 </span>
               </div>
             </NavLink>
 
             {/* Desktop Tab Nav */}
-            <nav className="hidden md:flex items-center gap-0.5 flex-1">
+            <nav className="hidden md:flex items-center gap-1 flex-1">
               {navLinks.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={getNavHref(to)}
                   className={({ isActive }) =>
-                    `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+                    `flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                       isActive
-                        ? 'bg-emerald-600 text-white shadow shadow-emerald-950'
-                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                        ? 'bg-[#167a68] text-white shadow-sm'
+                        : 'text-slate-600 hover:text-[#0b4d3c] hover:bg-emerald-50'
                     }`
                   }
                 >
@@ -96,28 +107,28 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
             </nav>
 
             {/* Right Side */}
-            <div className="flex items-center gap-2 ml-auto">
-              {/* Hospital Switcher for Super Admin or Badge for Staff */}
+            <div className="flex items-center gap-2.5 ml-auto">
+              {/* Hospital Switcher or Badge */}
               {isSuperAdmin ? (
-                <div className="flex items-center gap-1.5 bg-slate-800/90 border border-indigo-500/40 rounded-xl px-2.5 py-1 text-xs shadow-sm">
-                  <Building2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                <div className="flex items-center gap-1.5 bg-[#dff5ea] border border-[#c2ebd5] rounded-xl px-2.5 py-1 text-xs shadow-xs">
+                  <Building2 className="w-3.5 h-3.5 text-[#167a68] shrink-0" />
                   <select
                     id="super-admin-hospital-select"
                     value={hospitalId}
                     onChange={(e) => changeHospital(e.target.value)}
-                    className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer pr-1"
+                    className="bg-transparent text-[#0b4d3c] text-xs font-bold focus:outline-none cursor-pointer pr-1"
                     title="Switch Hospital View"
                   >
                     {hospitals.map((h) => (
-                      <option key={h.id} value={h.id} className="bg-slate-900 text-white">
+                      <option key={h.id} value={h.id} className="bg-white text-slate-800">
                         {h.name} (#{h.id})
                       </option>
                     ))}
                   </select>
                 </div>
               ) : (
-                <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 bg-slate-800/60 border border-slate-700 px-2.5 py-1 rounded-lg">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-bold text-[#0b4d3c] bg-[#dff5ea] border border-[#c2ebd5] px-3 py-1 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
                   <span>{currentHospital?.name || `Hospital #${hospitalId}`}</span>
                 </div>
               )}
@@ -125,9 +136,9 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
               {/* Public portal link */}
               <NavLink
                 to="/"
-                className="hidden lg:flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-700/50 border border-slate-700/50 px-2.5 py-1.5 rounded-lg transition-colors"
+                className="hidden lg:flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-[#0b4d3c] bg-white hover:bg-emerald-50 border border-[#c8eedc] px-3 py-1.5 rounded-full transition-colors shadow-xs"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-3.5 h-3.5 text-[#167a68]" />
                 Public
               </NavLink>
 
@@ -136,14 +147,14 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
                 <button
                   id="hospital-user-menu"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 rounded-xl px-2.5 py-1.5 transition-colors"
+                  className="flex items-center gap-2 bg-white hover:bg-emerald-50/60 border border-[#c8eedc] rounded-full px-2.5 py-1.5 transition-colors shadow-xs"
                 >
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-[10px] font-black">
+                  <div className="w-6 h-6 rounded-full bg-[#167a68] flex items-center justify-center text-white text-[10px] font-bold">
                     {initials}
                   </div>
                   <div className="hidden sm:block text-left">
-                    <p className="text-xs font-bold text-white leading-tight">{user?.name?.split(' ')[0] || 'Admin'}</p>
-                    <p className="text-[10px] text-slate-400 leading-tight">
+                    <p className="text-xs font-bold text-slate-900 leading-tight">{user?.name?.split(' ')[0] || 'Admin'}</p>
+                    <p className="text-[10px] text-slate-500 leading-tight">
                       {user?.role === 'hospital_admin' ? 'Admin' : 'Staff'}
                     </p>
                   </div>
@@ -156,37 +167,35 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
                       className="fixed inset-0 z-40"
                       onClick={() => setUserMenuOpen(false)}
                     />
-                    <div className="absolute right-0 top-full mt-2 w-52 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl shadow-slate-950 z-50 overflow-hidden">
-                      {/* User info */}
-                      <div className="px-4 py-3 border-b border-slate-800">
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#c8eedc] rounded-2xl shadow-xl z-50 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-emerald-100 bg-[#fbfdfc]">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-sm font-black">
+                          <div className="w-9 h-9 rounded-full bg-[#167a68] flex items-center justify-center text-white text-sm font-bold">
                             {initials}
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-white">{user?.name || 'Hospital Admin'}</p>
-                            <p className="text-[11px] text-slate-400 truncate max-w-[140px]">{user?.email}</p>
+                            <p className="text-xs font-bold text-slate-900">{user?.name || 'Hospital Admin'}</p>
+                            <p className="text-[11px] text-slate-500 truncate max-w-[140px]">{user?.email}</p>
                           </div>
                         </div>
-                        <div className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-emerald-400">
-                          <ShieldCheck className="w-3 h-3" />
+                        <div className="mt-2 flex items-center gap-1.5 text-[10px] font-bold text-[#167a68]">
+                          <ShieldCheck className="w-3.5 h-3.5" />
                           <span>{user?.role === 'hospital_admin' ? 'Hospital Administrator' : 'Hospital Staff'}</span>
                         </div>
                       </div>
 
-                      {/* Actions */}
                       <div className="p-2 space-y-0.5">
                         <NavLink
                           to="/"
                           onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-2.5 w-full px-3 py-2 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                          className="flex items-center gap-2.5 w-full px-3 py-2 text-xs text-slate-700 hover:text-[#0b4d3c] hover:bg-emerald-50 rounded-xl transition-colors font-medium"
                         >
-                          <ExternalLink className="w-3.5 h-3.5" />
+                          <ExternalLink className="w-3.5 h-3.5 text-[#167a68]" />
                           Public Portal
                         </NavLink>
                         <button
                           onClick={handleLogout}
-                          className="flex items-center gap-2.5 w-full px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded-lg transition-colors"
+                          className="flex items-center gap-2.5 w-full px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 rounded-xl transition-colors font-semibold"
                         >
                           <LogOut className="w-3.5 h-3.5" />
                           Sign Out
@@ -200,7 +209,7 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
               {/* Mobile hamburger */}
               <button
                 id="hospital-mobile-menu-toggle"
-                className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg focus:outline-none"
+                className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg focus:outline-none"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Toggle navigation menu"
               >
@@ -209,23 +218,23 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
             </div>
           </div>
 
-          {/* ── Mobile Nav Dropdown ── */}
+          {/* Mobile Nav Dropdown */}
           {mobileMenuOpen && (
-            <div className="md:hidden border-t border-slate-800 py-2 pb-3 grid grid-cols-3 gap-1">
-              {navLinks.map(({ to, label, icon: Icon, color }) => (
+            <div className="md:hidden border-t border-emerald-100 py-3 grid grid-cols-3 gap-1.5">
+              {navLinks.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={getNavHref(to)}
                   onClick={() => setMobileMenuOpen(false)}
                   className={({ isActive }) =>
-                    `flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl text-[10px] font-semibold transition-all ${
+                    `flex flex-col items-center gap-1 py-2 px-1 rounded-xl text-[10px] font-bold transition-all ${
                       isActive
-                        ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-600/30'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                        ? 'bg-[#167a68] text-white shadow-xs'
+                        : 'text-slate-600 hover:bg-emerald-50'
                     }`
                   }
                 >
-                  <Icon className={`w-4 h-4 ${color}`} />
+                  <Icon className="w-4 h-4" />
                   {label}
                 </NavLink>
               ))}
@@ -234,21 +243,21 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
         </div>
       </header>
 
-      {/* ── Secondary breadcrumb / page title bar ── */}
+      {/* Secondary breadcrumb / page title bar */}
       {(title || subtitle) && (
-        <div className="bg-slate-900/40 border-b border-slate-800/50 px-4 sm:px-6 py-3 max-w-screen-2xl mx-auto w-full">
+        <div className="bg-[#f0faf5] border-b border-emerald-100/80 px-4 sm:px-6 py-3.5 max-w-screen-2xl mx-auto w-full">
           <div className="flex items-center justify-between">
             <div>
               {title && (
-                <h1 className="text-base sm:text-lg font-black text-white tracking-tight">{title}</h1>
+                <h1 className="font-serif text-lg sm:text-xl font-bold text-[#0b4d3c] tracking-tight">{title}</h1>
               )}
               {subtitle && (
-                <p className="text-xs text-slate-400 mt-0.5 leading-tight">{subtitle}</p>
+                <p className="text-xs text-slate-500 mt-0.5 leading-tight">{subtitle}</p>
               )}
             </div>
             {activeLink && (
-              <div className={`flex items-center gap-1.5 text-[11px] font-bold ${activeLink.color} bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg`}>
-                <activeLink.icon className="w-3 h-3" />
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#0b4d3c] bg-white border border-[#c8eedc] px-3 py-1 rounded-full shadow-xs">
+                <activeLink.icon className="w-3.5 h-3.5 text-[#167a68]" />
                 {activeLink.label}
               </div>
             )}
@@ -256,7 +265,7 @@ export default function HospitalAdminLayout({ children, title, subtitle }) {
         </div>
       )}
 
-      {/* ── Main Content ── */}
+      {/* Main Content */}
       <main className="flex-1 w-full max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 overflow-x-hidden">
         {children}
       </main>

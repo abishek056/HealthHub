@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import EmergencyModal from './EmergencyModal';
 
 /**
@@ -31,15 +32,22 @@ function AmbulanceIcon({ className = 'w-7 h-7' }) {
 
 export default function EmergencyButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const location = useLocation();
+
+  // Do not show floating SOS emergency button on management portals (/hospital/* or /admin/*) or auth pages (/login, /register)
+  if (
+    location.pathname.startsWith('/hospital') ||
+    location.pathname.startsWith('/admin') ||
+    location.pathname === '/login' ||
+    location.pathname === '/register'
+  ) {
+    return null;
+  }
 
   return (
     <>
       {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6 z-40 flex items-center group">
-        {/* Floating tooltip label on hover/focus */}
-        <span className="hidden sm:inline-block mr-3 px-3 py-1.5 rounded-xl bg-slate-900/90 text-white font-bold text-xs shadow-xl border border-red-500/30 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-2 group-hover:translate-x-0 pointer-events-none whitespace-nowrap">
-          Emergency ICU & Ambulance (102)
-        </span>
+      <div className="fixed bottom-6 right-6 z-40 flex items-center">
 
         <button
           onClick={() => setIsModalOpen(true)}
@@ -47,12 +55,15 @@ export default function EmergencyButton() {
           aria-label="Open Emergency Services & Ambulance Routing"
           aria-haspopup="dialog"
           aria-expanded={isModalOpen}
-          className="relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-red-700 via-red-600 to-rose-500 text-white shadow-2xl shadow-red-600/60 hover:shadow-red-500/80 hover:scale-105 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-red-400/50 cursor-pointer"
+          className="relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-rose-700 via-rose-600 to-red-500 text-white shadow-xl shadow-rose-600/30 hover:shadow-2xl hover:shadow-rose-600/50 hover:scale-105 active:scale-95 transition-all duration-300 focus:outline-none ring-4 ring-[#167a68]/20 hover:ring-[#167a68]/40 border-2 border-white cursor-pointer"
         >
+          {/* Subtle pulse halo ring */}
+          <span className="absolute -inset-1 rounded-full bg-[#167a68]/25 animate-ping pointer-events-none opacity-40" />
+
           {/* Icon */}
           <div className="relative z-10 flex flex-col items-center justify-center">
-            <AmbulanceIcon className="w-7 h-7 sm:w-8 sm:h-8" />
-            <span className="text-[9px] font-black uppercase tracking-wider leading-none mt-0.5">
+            <AmbulanceIcon className="w-6 h-6 sm:w-7 sm:h-7" />
+            <span className="text-[10px] font-black uppercase tracking-wider leading-none mt-0.5">
               SOS
             </span>
           </div>

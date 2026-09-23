@@ -100,27 +100,29 @@ export default function Dashboard() {
       }
 
       // Patients
-      let pCount = 0;
+      let patientCount = 0;
       if (patientsRes.status === 'fulfilled') {
-        const pData = patientsRes.value?.data || patientsRes.value || [];
-        setRecentPatients(Array.isArray(pData) ? pData : []);
-        pCount = patientsRes.value?.meta?.total || pData.length;
+        const pData = patientsRes.value;
+        patientCount = pData.total || (Array.isArray(pData) ? pData.length : 0);
+        setRecentPatients(Array.isArray(pData.data) ? pData.data : Array.isArray(pData) ? pData : []);
       }
 
       // Appointments
-      let aptTotal = 0;
-      let aptToday = 0;
-      let aptConfirmed = 0;
+      let totalApt = 0;
+      let todayApt = 0;
+      let confirmedApt = 0;
       if (aptsRes.status === 'fulfilled') {
-        const rawApts = Array.isArray(aptsRes.value) ? aptsRes.value : aptsRes.value?.data || [];
-        aptTotal = rawApts.length;
+        const aptList = Array.isArray(aptsRes.value)
+          ? aptsRes.value
+          : aptsRes.value?.data || [];
+        totalApt = aptList.length;
         const todayStr = new Date().toISOString().split('T')[0];
-        aptToday = rawApts.filter((a) => {
-          const d = a.appointment_date ? a.appointment_date.split('T')[0] : '';
-          return d === todayStr;
+        todayApt = aptList.filter((a) => {
+          const aDate = a.appointment_date ? a.appointment_date.split('T')[0] : '';
+          return aDate === todayStr;
         }).length;
-        aptConfirmed = rawApts.filter((a) => a.status === 'confirmed').length;
-        setRecentAppointments(rawApts.slice(0, 5));
+        confirmedApt = aptList.filter((a) => a.status === 'confirmed').length;
+        setRecentAppointments(aptList.slice(0, 6));
       }
 
       setStats({
@@ -130,13 +132,13 @@ export default function Dashboard() {
         totalAmbulances: totalAmb,
         avgWaitTime: avgWait,
         totalQueues: totalQ,
-        patientRecordsCount: pCount,
-        totalAppointments: aptTotal,
-        todayAppointments: aptToday,
-        confirmedAppointments: aptConfirmed,
+        patientRecordsCount: patientCount,
+        totalAppointments: totalApt,
+        todayAppointments: todayApt,
+        confirmedAppointments: confirmedApt,
       });
     } catch (err) {
-      console.error('Failed to load dashboard data', err);
+      console.error('Error loading dashboard data:', err);
     } finally {
       setLoading(false);
     }
@@ -159,25 +161,25 @@ export default function Dashboard() {
         {/* KPI Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Card 1: Available Beds */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group hover:border-slate-700 transition-all">
+          <div className="bg-white border border-[#c8eedc] rounded-3xl p-5 shadow-xs relative overflow-hidden group hover:shadow-md transition-all">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Available Beds</span>
-              <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Available Beds</span>
+              <div className="w-10 h-10 rounded-2xl bg-[#dff5ea] text-[#167a68] flex items-center justify-center">
                 <BedDouble className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-3xl font-black text-white">{stats.availableBeds}</span>
-              <span className="text-xs text-slate-400 font-semibold">/ {stats.totalBeds} total</span>
+              <span className="text-3xl font-extrabold text-slate-900">{stats.availableBeds}</span>
+              <span className="text-xs text-slate-500 font-semibold">/ {stats.totalBeds} total</span>
             </div>
             <div className="mt-3">
-              <div className="flex justify-between text-[11px] text-slate-400 mb-1 font-semibold">
+              <div className="flex justify-between text-[11px] text-slate-500 mb-1 font-bold">
                 <span>Occupancy</span>
-                <span className={occupancyRate >= 85 ? 'text-red-400' : 'text-emerald-400'}>{occupancyRate}%</span>
+                <span className={occupancyRate >= 85 ? 'text-red-600' : 'text-[#167a68]'}>{occupancyRate}%</span>
               </div>
-              <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+              <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden border border-slate-200/60">
                 <div
-                  className={`h-full rounded-full ${occupancyRate >= 85 ? 'bg-red-500' : 'bg-blue-500'}`}
+                  className={`h-full rounded-full ${occupancyRate >= 85 ? 'bg-red-500' : 'bg-[#167a68]'}`}
                   style={{ width: `${occupancyRate}%` }}
                 />
               </div>
@@ -187,201 +189,201 @@ export default function Dashboard() {
           {/* Card 2: Appointments */}
           <Link
             to="/hospital/appointments"
-            className="bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl p-5 shadow-xl relative overflow-hidden group transition-all"
+            className="bg-white border border-[#c8eedc] hover:border-emerald-400 rounded-3xl p-5 shadow-xs relative overflow-hidden group transition-all hover:shadow-md"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-cyan-300 transition-colors">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider group-hover:text-[#167a68] transition-colors">
                 Appointments
               </span>
-              <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Calendar className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-3xl font-black text-cyan-400">{stats.totalAppointments}</span>
-              <span className="text-xs text-slate-400 font-semibold">({stats.confirmedAppointments} active)</span>
+              <span className="text-3xl font-extrabold text-[#0b4d3c]">{stats.totalAppointments}</span>
+              <span className="text-xs text-slate-500 font-semibold">({stats.confirmedAppointments} active)</span>
             </div>
-            <p className="mt-3 text-xs text-slate-400 flex items-center justify-between">
+            <p className="mt-3 text-xs text-slate-500 flex items-center justify-between font-medium">
               <span className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                <Clock className="w-3.5 h-3.5 text-[#167a68]" />
                 {stats.todayAppointments} scheduled today
               </span>
-              <ArrowUpRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400 transition-colors" />
+              <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
             </p>
           </Link>
 
           {/* Card 3: Active Ambulances */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group hover:border-slate-700 transition-all">
+          <div className="bg-white border border-[#c8eedc] rounded-3xl p-5 shadow-xs relative overflow-hidden group hover:shadow-md transition-all">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Fleet Ready</span>
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Fleet Ready</span>
+              <div className="w-10 h-10 rounded-2xl bg-[#dff5ea] text-[#167a68] flex items-center justify-center">
                 <Truck className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-3xl font-black text-emerald-400">{stats.activeAmbulances}</span>
-              <span className="text-xs text-slate-400 font-semibold">/ {stats.totalAmbulances} units</span>
+              <span className="text-3xl font-extrabold text-[#167a68]">{stats.activeAmbulances}</span>
+              <span className="text-xs text-slate-500 font-semibold">/ {stats.totalAmbulances} units</span>
             </div>
-            <p className="mt-3 text-xs text-slate-400 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <p className="mt-3 text-xs text-slate-500 flex items-center gap-1.5 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
               Live GPS broadcast active
             </p>
           </div>
 
           {/* Card 4: OPD Wait Time */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group hover:border-slate-700 transition-all">
+          <div className="bg-white border border-[#c8eedc] rounded-3xl p-5 shadow-xs relative overflow-hidden group hover:shadow-md transition-all">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg OPD Wait</span>
-              <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avg OPD Wait</span>
+              <div className="w-10 h-10 rounded-2xl bg-[#dff5ea] text-[#167a68] flex items-center justify-center">
                 <Clock className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-3xl font-black text-white">{stats.avgWaitTime}</span>
-              <span className="text-xs text-slate-400 font-semibold">minutes</span>
+              <span className="text-3xl font-extrabold text-slate-900">{stats.avgWaitTime}</span>
+              <span className="text-xs text-slate-500 font-semibold">minutes</span>
             </div>
-            <p className="mt-3 text-xs text-slate-400 flex items-center gap-1">
-              <Users className="w-3.5 h-3.5 text-purple-400" />
+            <p className="mt-3 text-xs text-slate-500 flex items-center gap-1 font-medium">
+              <Users className="w-3.5 h-3.5 text-[#167a68]" />
               Across {stats.totalQueues} departments
             </p>
           </div>
 
           {/* Card 5: Hospital Patient Records */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden group hover:border-slate-700 transition-all sm:col-span-2 lg:col-span-1">
+          <div className="bg-white border border-[#c8eedc] rounded-3xl p-5 shadow-xs relative overflow-hidden group hover:shadow-md transition-all sm:col-span-2 lg:col-span-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Patient Records</span>
-              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Patient Records</span>
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center">
                 <FileText className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-3xl font-black text-amber-400">{stats.patientRecordsCount}</span>
-              <span className="text-xs text-slate-400 font-semibold">on file</span>
+              <span className="text-3xl font-extrabold text-amber-700">{stats.patientRecordsCount}</span>
+              <span className="text-xs text-slate-500 font-semibold">on file</span>
             </div>
-            <p className="mt-3 text-xs text-slate-400 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <p className="mt-3 text-xs text-slate-500 flex items-center gap-1 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#167a68]" />
               Tenant Encrypted
             </p>
           </div>
         </div>
 
         {/* Quick Actions Bar */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-800/80 border border-slate-800 rounded-2xl p-5 shadow-xl">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">
-            Quick Actions
+        <div className="bg-white border border-[#c8eedc] rounded-3xl p-6 shadow-xs">
+          <h3 className="font-serif text-sm font-bold text-[#0b4d3c] uppercase tracking-wider mb-4">
+            Quick Desk Actions
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
             <Link
               to="/hospital/appointments"
-              className="flex items-center justify-between p-3.5 bg-slate-950/60 hover:bg-slate-800/60 border border-slate-800 hover:border-cyan-500/50 rounded-xl transition-all group"
+              className="flex items-center justify-between p-3.5 bg-[#fbfdfc] hover:bg-[#dff5ea] border border-emerald-100 hover:border-emerald-300 rounded-2xl transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-cyan-500/20 text-cyan-400 group-hover:scale-110 transition-transform">
-                  <Calendar className="w-5 h-5" />
+                <div className="p-2 rounded-xl bg-teal-50 text-teal-700 group-hover:scale-105 transition-transform">
+                  <Calendar className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">Appointments</p>
-                  <p className="text-[10px] text-slate-400">View bookings ({stats.totalAppointments})</p>
+                  <p className="text-xs font-bold text-slate-900">Appointments</p>
+                  <p className="text-[10px] text-slate-500">Bookings ({stats.totalAppointments})</p>
                 </div>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors" />
+              <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#167a68] transition-colors" />
             </Link>
 
             <Link
               to="/hospital/beds"
-              className="flex items-center justify-between p-3.5 bg-slate-950/60 hover:bg-slate-800/60 border border-slate-800 hover:border-blue-500/50 rounded-xl transition-all group"
+              className="flex items-center justify-between p-3.5 bg-[#fbfdfc] hover:bg-[#dff5ea] border border-emerald-100 hover:border-emerald-300 rounded-2xl transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400 group-hover:scale-110 transition-transform">
-                  <BedDouble className="w-5 h-5" />
+                <div className="p-2 rounded-xl bg-[#dff5ea] text-[#167a68] group-hover:scale-105 transition-transform">
+                  <BedDouble className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">Update Beds</p>
-                  <p className="text-[10px] text-slate-400">ICU & ward capacity</p>
+                  <p className="text-xs font-bold text-slate-900">Update Beds</p>
+                  <p className="text-[10px] text-slate-500">ICU & ward capacity</p>
                 </div>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors" />
+              <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#167a68] transition-colors" />
             </Link>
 
             <Link
               to="/hospital/ambulances"
-              className="flex items-center justify-between p-3.5 bg-slate-950/60 hover:bg-slate-800/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl transition-all group"
+              className="flex items-center justify-between p-3.5 bg-[#fbfdfc] hover:bg-[#dff5ea] border border-emerald-100 hover:border-emerald-300 rounded-2xl transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform">
-                  <Truck className="w-5 h-5" />
+                <div className="p-2 rounded-xl bg-[#dff5ea] text-[#167a68] group-hover:scale-105 transition-transform">
+                  <Truck className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">Track Ambulance</p>
-                  <p className="text-[10px] text-slate-400">Live GPS status</p>
+                  <p className="text-xs font-bold text-slate-900">Track Ambulance</p>
+                  <p className="text-[10px] text-slate-500">Live GPS status</p>
                 </div>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors" />
+              <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#167a68] transition-colors" />
             </Link>
 
             <Link
               to="/hospital/opd"
-              className="flex items-center justify-between p-3.5 bg-slate-950/60 hover:bg-slate-800/60 border border-slate-800 hover:border-purple-500/50 rounded-xl transition-all group"
+              className="flex items-center justify-between p-3.5 bg-[#fbfdfc] hover:bg-[#dff5ea] border border-emerald-100 hover:border-emerald-300 rounded-2xl transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400 group-hover:scale-110 transition-transform">
-                  <Users className="w-5 h-5" />
+                <div className="p-2 rounded-xl bg-[#dff5ea] text-[#167a68] group-hover:scale-105 transition-transform">
+                  <Users className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">Manage OPD</p>
-                  <p className="text-[10px] text-slate-400">Tokens & wait time</p>
+                  <p className="text-xs font-bold text-slate-900">Manage OPD</p>
+                  <p className="text-[10px] text-slate-500">Tokens & queues</p>
                 </div>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-purple-400 transition-colors" />
+              <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#167a68] transition-colors" />
             </Link>
 
             <Link
               to="/hospital/patients"
-              className="flex items-center justify-between p-3.5 bg-slate-950/60 hover:bg-slate-800/60 border border-slate-800 hover:border-amber-500/50 rounded-xl transition-all group"
+              className="flex items-center justify-between p-3.5 bg-[#fbfdfc] hover:bg-[#dff5ea] border border-emerald-100 hover:border-emerald-300 rounded-2xl transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400 group-hover:scale-110 transition-transform">
-                  <FileText className="w-5 h-5" />
+                <div className="p-2 rounded-xl bg-amber-50 text-amber-700 group-hover:scale-105 transition-transform">
+                  <FileText className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">Patient Records</p>
-                  <p className="text-[10px] text-slate-400">Admission histories</p>
+                  <p className="text-xs font-bold text-slate-900">Patient Records</p>
+                  <p className="text-[10px] text-slate-500">Histories & files</p>
                 </div>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-amber-400 transition-colors" />
+              <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-amber-700 transition-colors" />
             </Link>
 
             <Link
               to="/hospital/staff"
-              className="flex items-center justify-between p-3.5 bg-slate-950/60 hover:bg-slate-800/60 border border-slate-800 hover:border-rose-500/50 rounded-xl transition-all group"
+              className="flex items-center justify-between p-3.5 bg-[#fbfdfc] hover:bg-[#dff5ea] border border-emerald-100 hover:border-emerald-300 rounded-2xl transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-rose-500/20 text-rose-400 group-hover:scale-110 transition-transform">
-                  <UserPlus className="w-5 h-5" />
+                <div className="p-2 rounded-xl bg-rose-50 text-rose-600 group-hover:scale-105 transition-transform">
+                  <UserPlus className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">Manage Staff</p>
-                  <p className="text-[10px] text-slate-400">Staff accounts</p>
+                  <p className="text-xs font-bold text-slate-900">Staff Desk</p>
+                  <p className="text-[10px] text-slate-500">Staff accounts</p>
                 </div>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-rose-400 transition-colors" />
+              <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-rose-600 transition-colors" />
             </Link>
           </div>
         </div>
 
         {/* Incoming Hospital Appointments Feed */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h4 className="font-bold text-sm text-white flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-cyan-400" />
+        <div className="bg-white border border-[#c8eedc] rounded-3xl p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-emerald-100 pb-3">
+            <h4 className="font-serif font-bold text-base text-[#0b4d3c] flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-[#167a68]" />
               Incoming Patient Appointments
-              <span className="text-[10px] font-bold bg-cyan-950 border border-cyan-800 text-cyan-300 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold bg-[#dff5ea] border border-[#c2ebd5] text-[#0b4d3c] px-2.5 py-0.5 rounded-full">
                 {stats.totalAppointments} Booked
               </span>
             </h4>
             <Link
               to="/hospital/appointments"
-              className="text-xs font-semibold text-cyan-400 hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-[#167a68] hover:underline flex items-center gap-1"
             >
               View & Manage All <ChevronRight className="w-3.5 h-3.5" />
             </Link>
@@ -389,16 +391,15 @@ export default function Dashboard() {
 
           <div className="space-y-2.5">
             {recentAppointments.length === 0 ? (
-              <div className="text-center py-6 border border-dashed border-slate-800 rounded-xl space-y-1.5">
-                <Calendar className="w-8 h-8 text-slate-600 mx-auto" />
-                <p className="text-xs text-slate-400">No appointments booked yet for this hospital.</p>
+              <div className="text-center py-8 border border-dashed border-emerald-200 rounded-2xl space-y-1.5 bg-[#fbfdfc]">
+                <Calendar className="w-8 h-8 text-slate-400 mx-auto" />
+                <p className="text-xs font-medium text-slate-500">No appointments booked yet for this hospital.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {recentAppointments.map((apt) => {
                   const isConfirmed = apt.status === 'confirmed';
                   const isCompleted = apt.status === 'completed';
-                  const isCancelled = apt.status === 'cancelled';
                   const aptDate = apt.appointment_date
                     ? typeof apt.appointment_date === 'string'
                       ? apt.appointment_date.split('T')[0]
@@ -408,19 +409,19 @@ export default function Dashboard() {
                   return (
                     <div
                       key={apt.id}
-                      className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800/90 hover:border-slate-700 transition-all space-y-2"
+                      className="p-4 bg-[#fbfdfc] rounded-2xl border border-emerald-100 hover:border-emerald-300 hover:shadow-xs transition-all space-y-2.5"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-mono text-[11px] font-bold text-cyan-300 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/40">
+                        <span className="font-mono text-[11px] font-bold text-[#0b4d3c] bg-[#dff5ea] px-2 py-0.5 rounded-full border border-[#c2ebd5]">
                           {apt.token_number}
                         </span>
                         <span
                           className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${
                             isConfirmed
-                              ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                               : isCompleted
-                              ? 'bg-blue-500/15 border-blue-500/30 text-blue-400'
-                              : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                              ? 'bg-blue-50 border-blue-200 text-blue-700'
+                              : 'bg-rose-50 border-rose-200 text-rose-700'
                           }`}
                         >
                           {apt.status}
@@ -428,12 +429,12 @@ export default function Dashboard() {
                       </div>
 
                       <div>
-                        <p className="text-xs font-bold text-white">{apt.patient_name}</p>
-                        <p className="text-[11px] text-slate-400">{apt.patient_phone}</p>
+                        <p className="text-xs font-bold text-slate-900">{apt.patient_name}</p>
+                        <p className="text-[11px] text-slate-500">{apt.patient_phone}</p>
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] text-slate-300 pt-1 border-t border-slate-900">
-                        <span className="text-cyan-300 font-medium">{apt.department}</span>
+                      <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1.5 border-t border-emerald-50">
+                        <span className="text-[#0b4d3c] font-semibold">{apt.department}</span>
                         <span className="text-slate-400">{aptDate} • {apt.time_slot}</span>
                       </div>
                     </div>
@@ -447,13 +448,13 @@ export default function Dashboard() {
         {/* Two Column Grid: Ward Summary + Recent Patients Log */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Ward Occupancy Overview */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h4 className="font-bold text-sm text-white flex items-center gap-2">
-                <Activity className="w-4 h-4 text-blue-400" />
+          <div className="bg-white border border-[#c8eedc] rounded-3xl p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-emerald-100 pb-3">
+              <h4 className="font-serif font-bold text-base text-[#0b4d3c] flex items-center gap-2">
+                <Activity className="w-4 h-4 text-[#167a68]" />
                 Ward Capacity Breakdown
               </h4>
-              <Link to="/hospital/beds" className="text-xs font-semibold text-emerald-400 hover:underline">
+              <Link to="/hospital/beds" className="text-xs font-bold text-[#167a68] hover:underline">
                 Manage All
               </Link>
             </div>
@@ -467,16 +468,16 @@ export default function Dashboard() {
                     ? Math.round(((bed.total_beds - bed.available_beds) / bed.total_beds) * 100)
                     : 0;
                   return (
-                    <div key={bed.id} className="p-3 bg-slate-950/50 rounded-xl border border-slate-800 space-y-2">
+                    <div key={bed.id} className="p-3.5 bg-[#fbfdfc] rounded-2xl border border-emerald-100 space-y-2">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-white">{bed.ward_type} Ward</span>
-                        <span className="font-semibold text-emerald-400">
+                        <span className="font-bold text-slate-800">{bed.ward_type} Ward</span>
+                        <span className="font-bold text-[#167a68]">
                           {bed.available_beds} of {bed.total_beds} beds free
                         </span>
                       </div>
-                      <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden border border-slate-200/60">
                         <div
-                          className={`h-full rounded-full ${pct >= 85 ? 'bg-red-500' : 'bg-blue-500'}`}
+                          className={`h-full rounded-full ${pct >= 85 ? 'bg-red-500' : 'bg-[#167a68]'}`}
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -488,13 +489,13 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Patient Admissions Log */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h4 className="font-bold text-sm text-white flex items-center gap-2">
-                <FileText className="w-4 h-4 text-amber-400" />
+          <div className="bg-white border border-[#c8eedc] rounded-3xl p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-emerald-100 pb-3">
+              <h4 className="font-serif font-bold text-base text-[#0b4d3c] flex items-center gap-2">
+                <FileText className="w-4 h-4 text-amber-600" />
                 Recent Patient Records
               </h4>
-              <Link to="/hospital/patients" className="text-xs font-semibold text-emerald-400 hover:underline">
+              <Link to="/hospital/patients" className="text-xs font-bold text-[#167a68] hover:underline">
                 View All
               </Link>
             </div>
@@ -506,15 +507,15 @@ export default function Dashboard() {
                 recentPatients.slice(0, 5).map((p) => (
                   <div
                     key={p.id}
-                    className="p-3 bg-slate-950/50 rounded-xl border border-slate-800 flex items-center justify-between text-xs"
+                    className="p-3.5 bg-[#fbfdfc] rounded-2xl border border-emerald-100 flex items-center justify-between text-xs"
                   >
                     <div>
-                      <p className="font-bold text-white">{p.patient_name}</p>
-                      <p className="text-[11px] text-slate-400">
+                      <p className="font-bold text-slate-900">{p.patient_name}</p>
+                      <p className="text-[11px] text-slate-500">
                         {p.age} yrs • {p.diagnosis || 'General OPD'}
                       </p>
                     </div>
-                    <span className="text-[10px] text-slate-500 bg-slate-900 px-2 py-1 rounded border border-slate-800">
+                    <span className="text-[10px] font-bold text-[#0b4d3c] bg-[#dff5ea] px-2.5 py-1 rounded-full border border-[#c2ebd5]">
                       {p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Recent'}
                     </span>
                   </div>

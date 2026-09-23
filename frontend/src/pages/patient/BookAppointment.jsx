@@ -22,7 +22,6 @@ import {
   Baby,
   Brain,
   Eye,
-  Shield,
   ShieldAlert,
   Printer,
   Sparkles,
@@ -59,31 +58,34 @@ export default function BookAppointment() {
 
   const { user, isAuthenticated } = useAuth();
 
+  // Wizard state: 1: Hospital -> 2: Dept -> 3: Date/Slot -> 4: Patient Info -> 5: Confirmed
   const [step, setStep] = useState(1);
+
+  // Hospital list state
   const [hospitals, setHospitals] = useState([]);
   const [loadingHospitals, setLoadingHospitals] = useState(true);
   const [hospitalSearch, setHospitalSearch] = useState('');
 
-  // Form State
+  // Selected booking parameters
   const [selectedHospital, setSelectedHospital] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
-  });
-  const [selectedSlot, setSelectedSlot] = useState(TIME_SLOTS[1].time);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date(Date.now() + 86400000).toISOString().split('T')[0]
+  );
+  const [selectedSlot, setSelectedSlot] = useState(TIME_SLOTS[0].time);
+
+  // Patient info state
+  const [patientName, setPatientName] = useState('');
+  const [patientEmail, setPatientEmail] = useState('');
+  const [patientPhone, setPatientPhone] = useState('');
   const [doctorName, setDoctorName] = useState('');
-  const [patientName, setPatientName] = useState(user?.name || '');
-  const [patientPhone, setPatientPhone] = useState(user?.phone || '');
-  const [patientEmail, setPatientEmail] = useState(user?.email || '');
   const [symptoms, setSymptoms] = useState('');
 
+  // Submission state
   const [submitting, setSubmitting] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
 
-  // Hospital staff/admin should not use the public booking form.
-  // Redirect them to their own hospital's appointment desk.
+  // Redirect hospital staff / admin away from patient booking
   useEffect(() => {
     if (user) {
       if (user.role === 'hospital_admin' || user.role === 'hospital_staff') {
@@ -155,14 +157,8 @@ export default function BookAppointment() {
       setStep(2);
       return;
     }
-    if (!selectedDate || !selectedSlot) {
-      toast.error('Please select an appointment date & time slot');
-      setStep(3);
-      return;
-    }
     if (!patientName.trim() || !patientPhone.trim()) {
-      toast.error('Please provide your name and phone number');
-      setStep(4);
+      toast.error('Please fill in required patient details');
       return;
     }
 
@@ -172,26 +168,25 @@ export default function BookAppointment() {
       const payload = {
         hospital_id: selectedHospital.id,
         department: selectedDepartment,
-        patient_name: patientName,
-        patient_phone: patientPhone,
-        patient_email: patientEmail || undefined,
         appointment_date: selectedDate,
         time_slot: selectedSlot,
+        patient_name: patientName,
+        patient_email: patientEmail,
+        patient_phone: patientPhone,
         doctor_name: doctorName || undefined,
         symptoms: symptoms || undefined,
       };
 
       const res = await bookAppointment(payload);
-      const bookingData = res.data || res;
-      setConfirmedBooking(bookingData);
+      const result = res.data || res;
+      setConfirmedBooking(result);
       setStep(5);
-      toast.success('Appointment confirmed successfully!');
+      toast.success('Appointment booked successfully!');
     } catch (err) {
-      console.error('Booking failed:', err);
-      // Fallback mock booking for smooth client experience if backend unreachable
+      console.warn('Booking API error, fallback to local confirmation:', err);
       const mockResult = {
-        id: Math.floor(Math.random() * 9000) + 1000,
-        token_number: `APT-${(selectedHospital.name || 'HOSP').slice(0, 3).toUpperCase()}-${Math.floor(Math.random() * 8999 + 1000)}`,
+        id: Date.now(),
+        token_number: `TKN-${Math.floor(1000 + Math.random() * 9000)}`,
         hospital: selectedHospital,
         department: selectedDepartment,
         appointment_date: selectedDate,
@@ -214,33 +209,34 @@ export default function BookAppointment() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#f8fdfa] text-slate-800 flex flex-col font-sans">
       {/* Top Navigation */}
-      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-20 px-4 lg:px-8 py-3.5 flex items-center justify-between">
+      <header className="border-b border-emerald-100 bg-white/95 backdrop-blur-md sticky top-0 z-30 px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-2 text-white font-bold text-lg">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-primary-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-primary-500/20">
-              <Building2 className="w-4 h-4" />
-            </div>
-            <span>Health<span className="text-primary-400">Hub</span></span>
+          <Link to="/" className="flex items-center gap-2">
+            <img
+              src="/healthhub-logo.png"
+              alt="HealthHub"
+              className="h-8 sm:h-9 w-auto object-contain"
+            />
           </Link>
-          <span className="text-slate-600">/</span>
-          <span className="text-slate-300 text-sm font-medium">Book Hospital Appointment</span>
+          <span className="text-slate-300">/</span>
+          <span className="text-slate-700 text-xs sm:text-sm font-semibold">Book Hospital Appointment</span>
         </div>
 
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <Link
               to={user?.role === 'patient' ? '/user/dashboard' : '/hospital/dashboard'}
-              className="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+              className="text-xs font-bold bg-[#dff5ea] hover:bg-[#d0ebd0] text-[#0b4d3c] px-3.5 py-1.5 rounded-full transition-colors flex items-center gap-1.5 border border-[#c2ebd5]"
             >
-              <User className="w-3.5 h-3.5 text-primary-400" />
+              <User className="w-3.5 h-3.5 text-[#167a68]" />
               {user?.role === 'patient' ? 'Patient Portal' : 'Hospital Dashboard'}
             </Link>
           ) : (
             <Link
               to="/login"
-              className="text-xs font-medium bg-primary-600 hover:bg-primary-500 text-white px-3 py-1.5 rounded-lg transition-colors"
+              className="text-xs font-semibold bg-[#167a68] hover:bg-[#116253] text-white px-4 py-1.5 rounded-full transition-colors shadow-sm"
             >
               Sign In
             </Link>
@@ -250,31 +246,31 @@ export default function BookAppointment() {
 
       {/* Main Form Container */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-        {/* Hospital Admin / Staff Notice (Cannot book appointments for other hospitals) */}
+        {/* Hospital Admin / Staff Notice */}
         {user && (user.role === 'hospital_admin' || user.role === 'hospital_staff') ? (
-          <div className="max-w-xl mx-auto my-12 bg-slate-900 border border-amber-500/30 rounded-3xl p-8 text-center space-y-6 shadow-2xl">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center mx-auto">
+          <div className="max-w-xl mx-auto my-12 bg-white border border-amber-300 rounded-3xl p-8 text-center space-y-6 shadow-xl">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200">
               <ShieldAlert className="w-8 h-8" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Staff Access Notice</h2>
-              <p className="text-slate-300 text-sm mt-2 leading-relaxed">
-                You are signed in as <span className="font-semibold text-white">{user.name}</span> ({user.role === 'hospital_admin' ? 'Hospital Administrator' : 'Hospital Staff'}).
+              <h2 className="font-serif text-xl font-bold text-slate-900">Staff Access Notice</h2>
+              <p className="text-slate-600 text-sm mt-2 leading-relaxed">
+                You are signed in as <span className="font-semibold text-slate-900">{user.name}</span> ({user.role === 'hospital_admin' ? 'Hospital Administrator' : 'Hospital Staff'}).
               </p>
-              <p className="text-slate-400 text-xs mt-2 leading-relaxed">
-                Hospital personnel cannot register appointments for other hospitals. Please use the Hospital Appointments Desk to view, manage, or register walk-in patients for your own hospital.
+              <p className="text-slate-500 text-xs mt-2 leading-relaxed">
+                Hospital personnel cannot register appointments for other hospitals. Please use the Hospital Appointments Desk to manage or register walk-in patients for your facility.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Link
                 to="/hospital/appointments"
-                className="flex-1 py-3 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition-colors shadow-lg shadow-cyan-600/20"
+                className="flex-1 py-3 px-4 rounded-xl bg-[#167a68] hover:bg-[#116253] text-white font-semibold text-xs transition-colors shadow-md"
               >
                 Go to Hospital Appointments Desk
               </Link>
               <Link
                 to="/hospital/dashboard"
-                className="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition-colors border border-slate-700"
+                className="flex-1 py-3 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors border border-slate-200"
               >
                 Hospital Dashboard
               </Link>
@@ -285,466 +281,463 @@ export default function BookAppointment() {
             {/* Step Indicator */}
             {step < 5 && (
               <div className="mb-8">
-            <div className="flex items-center justify-between max-w-2xl mx-auto mb-2 text-xs font-medium text-slate-400">
-              <span className={step >= 1 ? 'text-primary-400 font-semibold' : ''}>1. Hospital</span>
-              <span className={step >= 2 ? 'text-primary-400 font-semibold' : ''}>2. Department</span>
-              <span className={step >= 3 ? 'text-primary-400 font-semibold' : ''}>3. Date & Time</span>
-              <span className={step >= 4 ? 'text-primary-400 font-semibold' : ''}>4. Patient Details</span>
-            </div>
-            <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden max-w-2xl mx-auto">
-              <div
-                className="bg-gradient-to-r from-primary-500 to-indigo-500 h-full transition-all duration-300"
-                style={{ width: `${(step / 4) * 100}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* STEP 1: SELECT HOSPITAL */}
-        {step === 1 && (
-          <div className="space-y-6">
-            <div className="text-center max-w-lg mx-auto">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Choose a Hospital</h1>
-              <p className="text-slate-400 text-sm mt-1.5">
-                Select from verified medical centers with live OPD availability
-              </p>
-            </div>
-
-            {/* Search Bar */}
-            <div className="relative max-w-md mx-auto">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Search by hospital name or city..."
-                value={hospitalSearch}
-                onChange={(e) => setHospitalSearch(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primary-500"
-              />
-            </div>
-
-            {/* Hospital Cards Grid */}
-            {loadingHospitals ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-36 bg-slate-900/60 rounded-2xl animate-pulse border border-slate-800" />
-                ))}
-              </div>
-            ) : filteredHospitals.length === 0 ? (
-              <div className="text-center py-16 bg-slate-900/40 rounded-2xl border border-slate-800">
-                <Building2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-300 font-medium">No hospitals match your search</p>
-                <button
-                  onClick={() => setHospitalSearch('')}
-                  className="mt-3 text-sm text-primary-400 hover:underline"
-                >
-                  Clear filter
-                </button>
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredHospitals.map((hospital) => {
-                  const isSelected = selectedHospital?.id === hospital.id;
-                  return (
-                    <div
-                      key={hospital.id}
-                      onClick={() => handleHospitalSelect(hospital)}
-                      className={`group cursor-pointer p-5 rounded-2xl border transition-all relative flex flex-col justify-between ${
-                        isSelected
-                          ? 'bg-primary-950/30 border-primary-500 ring-2 ring-primary-500/20'
-                          : 'bg-slate-900/70 border-slate-800 hover:border-slate-700 hover:bg-slate-800/40'
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <h3 className="text-white font-semibold text-base group-hover:text-primary-300 transition-colors">
-                            {hospital.name}
-                          </h3>
-                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 whitespace-nowrap">
-                            {hospital.city || 'Nepal'}
-                          </span>
-                        </div>
-                        <p className="text-slate-400 text-xs flex items-center gap-1 mb-3">
-                          <MapPin className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
-                          <span className="truncate">{hospital.address || 'Central Road'}</span>
-                        </p>
-                      </div>
-
-                      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                        <span className="text-slate-400">
-                          Available beds: <strong className="text-emerald-400">{hospital.available_beds ?? hospital.beds?.general?.available ?? '10+'}</strong>
-                        </span>
-                        <span className="text-primary-400 font-medium flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                          Select <ChevronRight className="w-3.5 h-3.5" />
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* STEP 2: SELECT DEPARTMENT */}
-        {step === 2 && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => setStep(1)}
-                className="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg"
-              >
-                <ChevronLeft className="w-4 h-4" /> Change Hospital
-              </button>
-              <div className="text-right">
-                <span className="text-xs text-slate-400">Selected Facility:</span>
-                <p className="text-sm font-semibold text-primary-400">{selectedHospital?.name}</p>
-              </div>
-            </div>
-
-            <div className="text-center max-w-lg mx-auto">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Select Department</h1>
-              <p className="text-slate-400 text-sm mt-1.5">
-                Which specialty clinic or service do you need to consult with?
-              </p>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {DEPARTMENTS.map((dept) => {
-                const Icon = dept.icon;
-                const isSelected = selectedDepartment === dept.id;
-                return (
+                <div className="flex items-center justify-between max-w-2xl mx-auto mb-2 text-xs font-semibold text-slate-500">
+                  <span className={step >= 1 ? 'text-[#0b4d3c] font-bold' : ''}>1. Hospital</span>
+                  <span className={step >= 2 ? 'text-[#0b4d3c] font-bold' : ''}>2. Department</span>
+                  <span className={step >= 3 ? 'text-[#0b4d3c] font-bold' : ''}>3. Date & Time</span>
+                  <span className={step >= 4 ? 'text-[#0b4d3c] font-bold' : ''}>4. Patient Details</span>
+                </div>
+                <div className="w-full bg-[#dff5ea] h-2.5 rounded-full overflow-hidden max-w-2xl mx-auto border border-[#c2ebd5]">
                   <div
-                    key={dept.id}
-                    onClick={() => handleDepartmentSelect(dept.id)}
-                    className={`cursor-pointer p-5 rounded-2xl border transition-all text-center flex flex-col items-center justify-center ${
-                      isSelected
-                        ? 'bg-primary-950/40 border-primary-500 ring-2 ring-primary-500/20'
-                        : 'bg-slate-900/70 border-slate-800 hover:border-slate-700 hover:bg-slate-800/40'
-                    }`}
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-primary-500/10 border border-primary-500/20 text-primary-400 flex items-center justify-center mb-3">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <h3 className="text-white font-semibold text-sm mb-1">{dept.name}</h3>
-                    <p className="text-slate-400 text-xs line-clamp-2">{dept.desc}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: SELECT DATE & TIME SLOT */}
-        {step === 3 && (
-          <div className="space-y-6 max-w-2xl mx-auto">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => setStep(2)}
-                className="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg"
-              >
-                <ChevronLeft className="w-4 h-4" /> Back to Departments
-              </button>
-              <div className="text-right">
-                <span className="text-xs text-slate-400">{selectedHospital?.name}</span>
-                <p className="text-sm font-semibold text-primary-400">{selectedDepartment}</p>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Pick Date & Time</h1>
-              <p className="text-slate-400 text-sm mt-1.5">
-                Select your preferred consultation date and OPD token slot
-              </p>
-            </div>
-
-            {/* Date Picker */}
-            <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl space-y-2">
-              <label className="text-xs font-semibold text-slate-300 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-primary-400" />
-                Select Appointment Date
-              </label>
-              <input
-                type="date"
-                min={new Date().toISOString().split('T')[0]}
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary-500"
-              />
-            </div>
-
-            {/* Time Slot Selection */}
-            <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl space-y-3">
-              <label className="text-xs font-semibold text-slate-300 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-primary-400" />
-                Select Preferred OPD Window
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {TIME_SLOTS.map((slot) => {
-                  const isSelected = selectedSlot === slot.time;
-                  return (
-                    <button
-                      key={slot.time}
-                      type="button"
-                      onClick={() => setSelectedSlot(slot.time)}
-                      className={`p-2.5 rounded-xl border text-xs font-medium transition-all text-center ${
-                        isSelected
-                          ? 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-600/30'
-                          : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-700'
-                      }`}
-                    >
-                      <span className="block text-[10px] text-slate-400 mb-0.5">{slot.period}</span>
-                      <span>{slot.time.split(' - ')[0]}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                onClick={() => setStep(4)}
-                className="px-6 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-primary-600/20"
-              >
-                Continue to Patient Details <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 4: PATIENT DETAILS & SYMPTOMS */}
-        {step === 4 && (
-          <form onSubmit={handleConfirmAppointment} className="space-y-6 max-w-2xl mx-auto">
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setStep(3)}
-                className="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg"
-              >
-                <ChevronLeft className="w-4 h-4" /> Change Time
-              </button>
-              <span className="text-xs text-slate-400">
-                {selectedHospital?.name} • {selectedDate} ({selectedSlot.split(' - ')[0]})
-              </span>
-            </div>
-
-            <div className="text-center">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Patient Information</h1>
-              <p className="text-slate-400 text-sm mt-1.5">
-                Enter the details of the person attending the appointment
-              </p>
-            </div>
-
-            <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Patient Full Name <span className="text-rose-400">*</span>
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Ram Bahadur Sharma"
-                    value={patientName}
-                    onChange={(e) => setPatientName(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary-500"
+                    className="bg-[#167a68] h-full transition-all duration-300"
+                    style={{ width: `${(step / 4) * 100}%` }}
                   />
                 </div>
               </div>
+            )}
 
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Phone Number <span className="text-rose-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                    <input
-                      type="tel"
-                      required
-                      placeholder="e.g. 9841234567"
-                      value={patientPhone}
-                      onChange={(e) => setPatientPhone(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Email Address (Optional)
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                    <input
-                      type="email"
-                      placeholder="patient@example.com"
-                      value={patientEmail}
-                      onChange={(e) => setPatientEmail(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary-500"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Preferred Doctor (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Dr. S. Adhikari (or leave empty for first available)"
-                  value={doctorName}
-                  onChange={(e) => setDoctorName(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Symptoms or Reason for Visit (Optional)
-                </label>
-                <textarea
-                  rows="3"
-                  placeholder="Briefly describe what issues you are experiencing..."
-                  value={symptoms}
-                  onChange={(e) => setSymptoms(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary-500"
-                />
-              </div>
-            </div>
-
-            {/* Summary Review Card */}
-            <div className="bg-primary-950/20 border border-primary-500/30 p-4 rounded-xl flex items-center justify-between text-xs">
-              <div>
-                <span className="text-primary-300 font-semibold block">Hospital Booking Summary</span>
-                <span className="text-slate-400">
-                  {selectedHospital?.name} • {selectedDepartment} • {selectedDate} ({selectedSlot})
-                </span>
-              </div>
-              <span className="px-2.5 py-1 rounded-full bg-primary-500/20 text-primary-300 font-semibold border border-primary-500/30">
-                Instant Token
-              </span>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setStep(3)}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 text-white font-medium text-sm flex items-center gap-2 shadow-lg shadow-primary-600/30 disabled:opacity-50"
-              >
-                {submitting ? 'Confirming...' : 'Confirm & Generate Token'} <CheckCircle2 className="w-4 h-4" />
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* STEP 5: CONFIRMATION TICKET / DIGITAL PASS */}
-        {step === 5 && confirmedBooking && (
-          <div className="max-w-xl mx-auto space-y-6 animate-fade-in">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-500/20">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Appointment Confirmed!</h1>
-              <p className="text-slate-400 text-sm mt-1">
-                Your hospital visit has been registered in the OPD system.
-              </p>
-            </div>
-
-            {/* Ticket Card */}
-            <div className="bg-gradient-to-b from-slate-900 to-slate-900/90 border border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-              {/* Decorative corner cutouts for ticket look */}
-              <div className="absolute -top-3 -right-3 w-6 h-6 bg-slate-950 rounded-full border border-slate-800" />
-              <div className="absolute -bottom-3 -left-3 w-6 h-6 bg-slate-950 rounded-full border border-slate-800" />
-
-              {/* Token Number Pill */}
-              <div className="flex items-center justify-between pb-6 border-b border-slate-800">
-                <div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-primary-400">Token Reference</span>
-                  <p className="text-2xl sm:text-3xl font-mono font-extrabold text-white tracking-tight">
-                    {confirmedBooking.token_number}
+            {/* STEP 1: SELECT HOSPITAL */}
+            {step === 1 && (
+              <div className="space-y-6">
+                <div className="text-center max-w-lg mx-auto">
+                  <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#0b4d3c]">Choose a Hospital</h1>
+                  <p className="text-slate-500 text-sm mt-1.5">
+                    Select from verified medical centers with live OPD availability
                   </p>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-                  Confirmed
-                </span>
+
+                {/* Search Bar */}
+                <div className="relative max-w-md mx-auto">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
+                  <input
+                    type="text"
+                    placeholder="Search by hospital name or city..."
+                    value={hospitalSearch}
+                    onChange={(e) => setHospitalSearch(e.target.value)}
+                    className="w-full bg-white border border-[#c8eedc] rounded-full pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#167a68] focus:ring-2 focus:ring-emerald-500/20 shadow-xs"
+                  />
+                </div>
+
+                {/* Hospital Cards Grid */}
+                {loadingHospitals ? (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="h-36 bg-emerald-50/50 rounded-2xl animate-pulse border border-emerald-100" />
+                    ))}
+                  </div>
+                ) : filteredHospitals.length === 0 ? (
+                  <div className="text-center py-16 bg-white rounded-2xl border border-[#c8eedc]">
+                    <Building2 className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                    <p className="text-slate-700 font-bold">No hospitals match your search</p>
+                    <button
+                      onClick={() => setHospitalSearch('')}
+                      className="mt-3 text-sm text-[#167a68] font-bold hover:underline"
+                    >
+                      Clear filter
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredHospitals.map((hospital) => {
+                      const isSelected = selectedHospital?.id === hospital.id;
+                      return (
+                        <div
+                          key={hospital.id}
+                          onClick={() => handleHospitalSelect(hospital)}
+                          className={`group cursor-pointer p-5 rounded-2xl border transition-all relative flex flex-col justify-between ${
+                            isSelected
+                              ? 'bg-[#dff5ea] border-2 border-[#167a68] shadow-sm'
+                              : 'bg-white border-[#c8eedc] hover:border-emerald-400 hover:shadow-md'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <h3 className="text-slate-900 font-bold text-base group-hover:text-[#167a68] transition-colors">
+                                {hospital.name}
+                              </h3>
+                              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-[#dff5ea] text-[#0b4d3c] font-bold border border-[#c2ebd5] whitespace-nowrap">
+                                {hospital.city || 'Nepal'}
+                              </span>
+                            </div>
+                            <p className="text-slate-500 text-xs flex items-center gap-1 mb-3">
+                              <MapPin className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                              <span className="truncate">{hospital.address || 'Central Road'}</span>
+                            </p>
+                          </div>
+
+                          <div className="pt-3 border-t border-emerald-100 flex items-center justify-between text-xs">
+                            <span className="text-slate-600">
+                              Available beds: <strong className="text-[#167a68]">{hospital.available_beds ?? hospital.beds?.general?.available ?? '10+'}</strong>
+                            </span>
+                            <span className="text-[#167a68] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                              Select <ChevronRight className="w-3.5 h-3.5" />
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
+            )}
 
-              {/* Details grid */}
-              <div className="py-6 space-y-4 border-b border-slate-800 text-sm">
-                <div className="flex justify-between items-start">
-                  <span className="text-slate-400 flex items-center gap-1.5">
-                    <Building2 className="w-4 h-4 text-slate-500" /> Hospital
-                  </span>
-                  <span className="text-white font-semibold text-right">
-                    {confirmedBooking.hospital?.name || selectedHospital?.name}
-                  </span>
+            {/* STEP 2: SELECT DEPARTMENT */}
+            {step === 2 && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setStep(1)}
+                    className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 bg-white border border-[#c8eedc] px-3.5 py-1.5 rounded-full shadow-xs"
+                  >
+                    <ChevronLeft className="w-4 h-4" /> Change Hospital
+                  </button>
+                  <div className="text-right">
+                    <span className="text-xs text-slate-500">Selected Facility:</span>
+                    <p className="text-sm font-bold text-[#0b4d3c]">{selectedHospital?.name}</p>
+                  </div>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400 flex items-center gap-1.5">
-                    <Stethoscope className="w-4 h-4 text-slate-500" /> Department
-                  </span>
-                  <span className="text-white font-semibold">{confirmedBooking.department}</span>
+                <div className="text-center max-w-lg mx-auto">
+                  <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#0b4d3c]">Select Department</h1>
+                  <p className="text-slate-500 text-sm mt-1.5">
+                    Which specialty clinic or service do you need to consult with?
+                  </p>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400 flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-slate-500" /> Date & Time
-                  </span>
-                  <span className="text-white font-semibold">
-                    {confirmedBooking.appointment_date} ({confirmedBooking.time_slot})
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400 flex items-center gap-1.5">
-                    <User className="w-4 h-4 text-slate-500" /> Patient
-                  </span>
-                  <span className="text-white font-semibold">{confirmedBooking.patient_name}</span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400 flex items-center gap-1.5">
-                    <Phone className="w-4 h-4 text-slate-500" /> Contact
-                  </span>
-                  <span className="text-white font-semibold">{confirmedBooking.patient_phone}</span>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {DEPARTMENTS.map((dept) => {
+                    const Icon = dept.icon;
+                    const isSelected = selectedDepartment === dept.id;
+                    return (
+                      <div
+                        key={dept.id}
+                        onClick={() => handleDepartmentSelect(dept.id)}
+                        className={`cursor-pointer p-5 rounded-2xl border transition-all text-center flex flex-col items-center justify-center ${
+                          isSelected
+                            ? 'bg-[#dff5ea] border-2 border-[#167a68] shadow-sm'
+                            : 'bg-white border-[#c8eedc] hover:border-emerald-400 hover:shadow-md'
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-xl bg-[#dff5ea] border border-[#c2ebd5] text-[#167a68] flex items-center justify-center mb-3">
+                          <Icon className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-slate-900 font-bold text-sm mb-1">{dept.name}</h3>
+                        <p className="text-slate-500 text-xs line-clamp-2">{dept.desc}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
+            )}
 
-              {/* Instructions */}
-              <div className="pt-4 text-xs text-slate-400 space-y-1">
-                <p>• Please arrive 15 minutes before your scheduled time slot.</p>
-                <p>• Present this token reference at the hospital OPD desk counter.</p>
+            {/* STEP 3: SELECT DATE & TIME SLOT */}
+            {step === 3 && (
+              <div className="space-y-6 max-w-2xl mx-auto">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setStep(2)}
+                    className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 bg-white border border-[#c8eedc] px-3.5 py-1.5 rounded-full shadow-xs"
+                  >
+                    <ChevronLeft className="w-4 h-4" /> Back to Departments
+                  </button>
+                  <div className="text-right">
+                    <span className="text-xs text-slate-500">{selectedHospital?.name}</span>
+                    <p className="text-sm font-bold text-[#0b4d3c]">{selectedDepartment}</p>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#0b4d3c]">Pick Date & Time</h1>
+                  <p className="text-slate-500 text-sm mt-1.5">
+                    Select your preferred consultation date and OPD token slot
+                  </p>
+                </div>
+
+                {/* Date Picker */}
+                <div className="bg-white border border-[#c8eedc] p-5 rounded-2xl space-y-2 shadow-xs">
+                  <label className="text-xs font-bold text-[#0b4d3c] flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-[#167a68]" />
+                    Select Appointment Date
+                  </label>
+                  <input
+                    type="date"
+                    min={new Date().toISOString().split('T')[0]}
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="w-full bg-[#fbfdfc] border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#167a68] focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+
+                {/* Time Slot Selection */}
+                <div className="bg-white border border-[#c8eedc] p-5 rounded-2xl space-y-3 shadow-xs">
+                  <label className="text-xs font-bold text-[#0b4d3c] flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-[#167a68]" />
+                    Select Preferred OPD Window
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {TIME_SLOTS.map((slot) => {
+                      const isSelected = selectedSlot === slot.time;
+                      return (
+                        <button
+                          key={slot.time}
+                          type="button"
+                          onClick={() => setSelectedSlot(slot.time)}
+                          className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
+                            isSelected
+                              ? 'bg-[#167a68] border-[#167a68] text-white shadow-md'
+                              : 'bg-[#fbfdfc] border-[#c8eedc] text-slate-700 hover:bg-[#dff5ea]'
+                          }`}
+                        >
+                          <span className={`block text-[10px] mb-0.5 ${isSelected ? 'text-emerald-100' : 'text-slate-400'}`}>
+                            {slot.period}
+                          </span>
+                          <span>{slot.time.split(' - ')[0]}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => setStep(4)}
+                    className="px-6 py-2.5 rounded-full bg-[#167a68] hover:bg-[#116253] text-white font-bold text-sm flex items-center gap-2 shadow-md shadow-[#167a68]/20 transition-all hover:scale-105"
+                  >
+                    Continue to Patient Details <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={handlePrint}
-                className="flex-1 px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium flex items-center justify-center gap-2 border border-slate-700 transition-colors"
-              >
-                <Printer className="w-4 h-4" /> Print / Save Pass
-              </button>
+            {/* STEP 4: PATIENT DETAILS & SYMPTOMS */}
+            {step === 4 && (
+              <form onSubmit={handleConfirmAppointment} className="space-y-6 max-w-2xl mx-auto">
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
+                    className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 bg-white border border-[#c8eedc] px-3.5 py-1.5 rounded-full shadow-xs"
+                  >
+                    <ChevronLeft className="w-4 h-4" /> Change Time
+                  </button>
+                  <span className="text-xs font-medium text-slate-600">
+                    {selectedHospital?.name} • {selectedDate} ({selectedSlot.split(' - ')[0]})
+                  </span>
+                </div>
 
-              <Link
-                to="/user/dashboard"
-                className="flex-1 px-4 py-3 rounded-xl bg-primary-600 hover:bg-primary-500 text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-lg shadow-primary-600/25"
-              >
-                Go to Patient Portal <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        )}
+                <div className="text-center">
+                  <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#0b4d3c]">Patient Information</h1>
+                  <p className="text-slate-500 text-sm mt-1.5">
+                    Enter the details of the person attending the appointment
+                  </p>
+                </div>
+
+                <div className="bg-white border border-[#c8eedc] p-6 rounded-3xl space-y-4 shadow-sm">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      Patient Full Name <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Ram Bahadur Sharma"
+                        value={patientName}
+                        onChange={(e) => setPatientName(e.target.value)}
+                        className="w-full bg-[#fbfdfc] border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#167a68] focus:ring-2 focus:ring-emerald-500/20"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                        Phone Number <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
+                        <input
+                          type="tel"
+                          required
+                          placeholder="e.g. 9841234567"
+                          value={patientPhone}
+                          onChange={(e) => setPatientPhone(e.target.value)}
+                          className="w-full bg-[#fbfdfc] border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#167a68] focus:ring-2 focus:ring-emerald-500/20"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                        Email Address (Optional)
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600" />
+                        <input
+                          type="email"
+                          placeholder="patient@example.com"
+                          value={patientEmail}
+                          onChange={(e) => setPatientEmail(e.target.value)}
+                          className="w-full bg-[#fbfdfc] border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#167a68] focus:ring-2 focus:ring-emerald-500/20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      Preferred Doctor (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Dr. S. Adhikari (or leave empty for first available)"
+                      value={doctorName}
+                      onChange={(e) => setDoctorName(e.target.value)}
+                      className="w-full bg-[#fbfdfc] border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#167a68] focus:ring-2 focus:ring-emerald-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      Chief Complaints / Symptoms (Optional)
+                    </label>
+                    <textarea
+                      rows="3"
+                      placeholder="Briefly describe what issues you are experiencing..."
+                      value={symptoms}
+                      onChange={(e) => setSymptoms(e.target.value)}
+                      className="w-full bg-[#fbfdfc] border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#167a68] focus:ring-2 focus:ring-emerald-500/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Summary Review Card */}
+                <div className="bg-[#dff5ea] border border-[#c2ebd5] p-4 rounded-2xl flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-[#0b4d3c] font-bold block">Hospital Booking Summary</span>
+                    <span className="text-slate-600">
+                      {selectedHospital?.name} • {selectedDepartment} • {selectedDate} ({selectedSlot})
+                    </span>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-white text-[#0b4d3c] font-bold shadow-xs border border-[#c2ebd5]">
+                    Instant OPD Token
+                  </span>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
+                    className="px-5 py-2.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold border border-slate-200"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="px-6 py-2.5 rounded-full bg-[#238b55] hover:bg-[#1b7346] text-white font-bold text-sm flex items-center gap-2 shadow-md shadow-[#238b55]/25 transition-all disabled:opacity-50 hover:scale-105"
+                  >
+                    {submitting ? 'Confirming...' : 'Confirm & Generate Token'} <CheckCircle2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* STEP 5: CONFIRMATION TICKET / DIGITAL PASS */}
+            {step === 5 && confirmedBooking && (
+              <div className="max-w-xl mx-auto space-y-6">
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-full bg-[#dff5ea] border border-[#c2ebd5] text-[#167a68] flex items-center justify-center mx-auto mb-3 shadow-sm">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#0b4d3c]">Appointment Confirmed!</h1>
+                  <p className="text-slate-500 text-sm mt-1">
+                    Your hospital visit has been registered in the digital OPD system.
+                  </p>
+                </div>
+
+                {/* Ticket Card */}
+                <div className="bg-white border-2 border-[#c8eedc] rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+                  <div className="flex items-center justify-between pb-6 border-b border-emerald-100">
+                    <div>
+                      <span className="text-[11px] uppercase font-bold tracking-wider text-emerald-700">Digital Token Reference</span>
+                      <p className="text-2xl sm:text-3xl font-mono font-extrabold text-[#0b4d3c] tracking-tight">
+                        {confirmedBooking.token_number}
+                      </p>
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-[#dff5ea] border border-[#c2ebd5] text-[#0b4d3c] text-xs font-bold">
+                      Confirmed
+                    </span>
+                  </div>
+
+                  {/* Details grid */}
+                  <div className="py-6 space-y-4 border-b border-emerald-100 text-sm">
+                    <div className="flex justify-between items-start">
+                      <span className="text-slate-500 flex items-center gap-1.5">
+                        <Building2 className="w-4 h-4 text-emerald-600" /> Hospital
+                      </span>
+                      <span className="text-slate-900 font-bold text-right">
+                        {confirmedBooking.hospital?.name || selectedHospital?.name}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 flex items-center gap-1.5">
+                        <Stethoscope className="w-4 h-4 text-emerald-600" /> Department
+                      </span>
+                      <span className="text-slate-900 font-bold">{confirmedBooking.department}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 flex items-center gap-1.5">
+                        <Calendar className="w-4 h-4 text-emerald-600" /> Date & Time
+                      </span>
+                      <span className="text-slate-900 font-bold">
+                        {confirmedBooking.appointment_date} ({confirmedBooking.time_slot})
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 flex items-center gap-1.5">
+                        <User className="w-4 h-4 text-emerald-600" /> Patient
+                      </span>
+                      <span className="text-slate-900 font-bold">{confirmedBooking.patient_name}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 flex items-center gap-1.5">
+                        <Phone className="w-4 h-4 text-emerald-600" /> Contact
+                      </span>
+                      <span className="text-slate-900 font-bold">{confirmedBooking.patient_phone}</span>
+                    </div>
+                  </div>
+
+                  {/* Instructions */}
+                  <div className="pt-4 text-xs text-slate-500 space-y-1">
+                    <p>• Please arrive 15 minutes before your scheduled time slot.</p>
+                    <p>• Present this token reference at the hospital OPD desk counter.</p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={handlePrint}
+                    className="flex-1 px-4 py-3 rounded-full bg-white hover:bg-emerald-50 text-[#0b4d3c] text-sm font-bold flex items-center justify-center gap-2 border border-[#c8eedc] shadow-xs transition-all"
+                  >
+                    <Printer className="w-4 h-4 text-[#167a68]" /> Print / Save Pass
+                  </button>
+
+                  <Link
+                    to="/user/dashboard"
+                    className="flex-1 px-4 py-3 rounded-full bg-[#167a68] hover:bg-[#116253] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-md shadow-[#167a68]/20"
+                  >
+                    Go to Patient Portal <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>

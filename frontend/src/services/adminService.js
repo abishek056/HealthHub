@@ -146,6 +146,12 @@ export const updateAppointmentStatus = async (id, status, extra = {}) => {
   return response.data;
 };
 
+// ── Register Patient Directly from Hospital Portal ──────────────────
+export const registerPatientByStaff = async (data) => {
+  const response = await api.post('/hospital/register-patient', data);
+  return response.data;
+};
+
 export default {
   getHospitalDetails,
   getBeds,
@@ -173,4 +179,5 @@ export default {
   deleteHospitalStaff,
   getHospitalAppointments,
   updateAppointmentStatus,
+  registerPatientByStaff,
 };

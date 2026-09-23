@@ -3,9 +3,30 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
-    @apply antialiased text-gray-900 bg-gray-50;
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased text-slate-900 bg-[#f8fcf9] font-sans;
     overflow-x: hidden;
     max-width: 100vw;
+  }
+
+  ::selection {
+    background-color: #d7f7e9;
+    color: #0f4b30;
+  }
+}
+
+@layer utilities {
+  .text-brand-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#0c5b52] to-[#2e9e66];
+  }
+
+  .glass-mint {
+    background: rgba(226, 246, 236, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 }

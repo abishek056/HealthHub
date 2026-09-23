@@ -29,7 +29,11 @@ import toast from 'react-hot-toast';
 import { useActiveHospital } from '../../hooks/useActiveHospital';
 
 export default function ManageStaff() {
+  const { user } = useAuth();
   const { hospitalId, currentHospital } = useActiveHospital();
+
+  // hospital_staff users can only manage other hospital_staff (not hospital_admin)
+  const isActingStaff = user?.role === 'hospital_staff';
 
   const [staffList, setStaffList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -148,9 +152,15 @@ export default function ManageStaff() {
     }
   };
 
-  const handleDelete = async (staffId, staffName) => {
+  const handleDelete = async (staffId, staffName, staffRole) => {
     if (user?.id === staffId) {
       toast.error('You cannot delete your own account.');
+      return;
+    }
+
+    // hospital_staff cannot delete hospital_admin accounts
+    if (isActingStaff && staffRole === 'hospital_admin') {
+      toast.error('You do not have permission to remove administrator accounts.');
       return;
     }
 
@@ -184,16 +194,16 @@ export default function ManageStaff() {
     >
       <div className="space-y-6">
         {/* Top Control Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800 p-4 rounded-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-[#c8eedc] p-4 rounded-2xl shadow-xs">
           {/* Search Box */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search staff by name, email, or phone..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full bg-[#fbfdfc] border border-[#c8eedc] rounded-xl pl-10 pr-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#167a68] transition-colors"
             />
           </div>
 
@@ -201,7 +211,7 @@ export default function ManageStaff() {
             <button
               onClick={fetchStaff}
               disabled={loading}
-              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700"
+              className="p-2.5 rounded-xl bg-[#fbfdfc] hover:bg-emerald-50 text-[#167a68] transition-colors border border-[#c8eedc]"
               title="Refresh Staff List"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -209,7 +219,7 @@ export default function ManageStaff() {
 
             <button
               onClick={handleOpenCreate}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-sm flex items-center gap-2 shadow-lg shadow-emerald-950 transition-all transform hover:-translate-y-0.5"
+              className="px-4 py-2.5 rounded-xl bg-[#167a68] hover:bg-[#116253] text-white font-semibold text-sm flex items-center gap-2 shadow-md transition-all transform hover:-translate-y-0.5 cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
               Add Hospital Staff
@@ -218,17 +228,17 @@ export default function ManageStaff() {
         </div>
 
         {/* Staff Table / List Card */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div className="bg-white border border-[#c8eedc] rounded-2xl overflow-hidden shadow-xs">
           {loading ? (
             <div className="p-8 space-y-3">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-16 bg-slate-800/50 rounded-xl animate-pulse" />
+                <div key={i} className="h-16 bg-emerald-50/50 rounded-xl animate-pulse" />
               ))}
             </div>
           ) : filteredStaff.length === 0 ? (
             <div className="text-center py-16 px-4 space-y-3">
-              <Users className="w-12 h-12 text-slate-600 mx-auto" />
-              <p className="text-slate-300 font-medium">No hospital staff found</p>
+              <Users className="w-12 h-12 text-slate-400 mx-auto" />
+              <p className="text-slate-700 font-medium">No hospital staff found</p>
               <p className="text-slate-500 text-xs max-w-sm mx-auto">
                 {search
                   ? 'No personnel matches your search filter.'
@@ -236,15 +246,15 @@ export default function ManageStaff() {
               </p>
               <button
                 onClick={handleOpenCreate}
-                className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md transition-colors"
+                className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#167a68] hover:bg-[#116253] text-white text-xs font-semibold shadow-xs transition-colors"
               >
                 <Plus className="w-4 h-4" /> Add First Staff Member
               </button>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-300">
-                <thead className="bg-slate-950/60 border-b border-slate-800 text-xs uppercase tracking-wider text-slate-400 font-semibold">
+              <table className="w-full text-left text-sm text-slate-600">
+                <thead className="bg-[#fbfdfc] border-b border-[#c8eedc] text-xs uppercase tracking-wider text-slate-500 font-semibold">
                   <tr>
                     <th className="py-3.5 px-6">Staff Member</th>
                     <th className="py-3.5 px-6">Role & Privileges</th>
@@ -253,7 +263,7 @@ export default function ManageStaff() {
                     <th className="py-3.5 px-6 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60">
+                <tbody className="divide-y divide-[#dff5ea]">
                   {filteredStaff.map((staff) => {
                     const isAdmin = staff.role === 'hospital_admin';
                     const isCurrentUser = user?.id === staff.id;
@@ -261,24 +271,24 @@ export default function ManageStaff() {
                     return (
                       <tr
                         key={staff.id}
-                        className="hover:bg-slate-800/30 transition-colors group"
+                        className="hover:bg-emerald-50/30 transition-colors group"
                       >
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-emerald-950/60 border border-emerald-800/50 text-emerald-400 font-bold flex items-center justify-center text-sm">
+                            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-[#c8eedc] text-[#167a68] font-bold flex items-center justify-center text-sm">
                               {staff.name?.slice(0, 2).toUpperCase() || 'ST'}
                             </div>
                             <div>
-                              <p className="text-white font-semibold flex items-center gap-2">
+                              <p className="text-slate-900 font-semibold flex items-center gap-2">
                                 {staff.name}
                                 {isCurrentUser && (
-                                  <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700">
+                                  <span className="text-[10px] bg-emerald-100 text-[#0b4d3c] font-bold px-1.5 py-0.5 rounded border border-[#c8eedc]">
                                     You
                                   </span>
                                 )}
                               </p>
                               <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                                <Mail className="w-3 h-3" />
+                                <Mail className="w-3 h-3 text-slate-400" />
                                 {staff.email}
                               </p>
                             </div>
@@ -289,8 +299,8 @@ export default function ManageStaff() {
                           <span
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
                               isAdmin
-                                ? 'bg-indigo-950/50 text-indigo-400 border-indigo-800/50'
-                                : 'bg-emerald-950/50 text-emerald-400 border-emerald-800/50'
+                                ? 'bg-[#dff5ea] text-[#167a68] border-[#c8eedc]'
+                                : 'bg-emerald-50 text-emerald-700 border-[#c8eedc]'
                             }`}
                           >
                             <Shield className="w-3 h-3" />
@@ -298,14 +308,14 @@ export default function ManageStaff() {
                           </span>
                         </td>
 
-                        <td className="py-4 px-6 text-xs text-slate-400">
+                        <td className="py-4 px-6 text-xs text-slate-500">
                           {staff.phone ? (
                             <span className="flex items-center gap-1">
-                              <Phone className="w-3.5 h-3.5 text-slate-500" />
+                              <Phone className="w-3.5 h-3.5 text-slate-400" />
                               {staff.phone}
                             </span>
                           ) : (
-                            <span className="text-slate-600">—</span>
+                            <span className="text-slate-400">—</span>
                           )}
                         </td>
 
@@ -319,16 +329,21 @@ export default function ManageStaff() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleOpenEdit(staff)}
-                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
-                              title="Edit Staff details"
+                              disabled={isActingStaff && isAdmin}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                isActingStaff && isAdmin
+                                  ? 'bg-slate-50 text-slate-300 cursor-not-allowed'
+                                  : 'bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-[#167a68] cursor-pointer'
+                              }`}
+                              title={isActingStaff && isAdmin ? 'Staff cannot edit admin accounts' : 'Edit Staff details'}
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
 
-                            {!isCurrentUser && (
+                            {!isCurrentUser && !(isActingStaff && isAdmin) && (
                               <button
-                                onClick={() => handleDelete(staff.id, staff.name)}
-                                className="p-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 hover:text-rose-300 border border-rose-900/40 transition-colors"
+                                onClick={() => handleDelete(staff.id, staff.name, staff.role)}
+                                className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors cursor-pointer"
                                 title="Remove staff"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -349,30 +364,30 @@ export default function ManageStaff() {
       {/* CREATE / EDIT STAFF MODAL */}
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={() => setIsModalOpen(false)}
         >
           <div
-            className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-md p-6 sm:p-7 shadow-2xl space-y-6"
+            className="bg-white border border-[#c8eedc] rounded-3xl w-full max-w-md p-6 sm:p-7 shadow-2xl space-y-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div className="flex items-center justify-between pb-4 border-b border-[#c8eedc]">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-950/60 border border-emerald-800/50 text-emerald-400 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-[#c8eedc] text-[#167a68] flex items-center justify-center">
                   <UserPlus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-bold text-slate-900">
                     {editingStaff ? 'Edit Staff Member' : 'Add Hospital Staff'}
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Hospital #{hospitalId} access control
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-emerald-50 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -381,47 +396,47 @@ export default function ManageStaff() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Full Name */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Full Name <span className="text-rose-400">*</span>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Full Name <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
                     required
                     placeholder="e.g. Nurse Sunita Sharma"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-[#fbfdfc] border border-[#c8eedc] rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#167a68]"
                   />
                 </div>
               </div>
 
               {/* Email */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Email Address <span className="text-rose-400">*</span>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Email Address <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="email"
                     required
                     placeholder="sunita@hospital.com"
                     value={formEmail}
                     onChange={(e) => setFormEmail(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-[#fbfdfc] border border-[#c8eedc] rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#167a68]"
                   />
                 </div>
               </div>
 
               {/* Password */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   {editingStaff ? 'New Password (leave empty to keep current)' : 'Login Password *'}
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="password"
                     required={!editingStaff}
@@ -429,78 +444,90 @@ export default function ManageStaff() {
                     placeholder="••••••••"
                     value={formPassword}
                     onChange={(e) => setFormPassword(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-[#fbfdfc] border border-[#c8eedc] rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#167a68]"
                   />
                 </div>
               </div>
 
               {/* Phone */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Contact Phone (Optional)
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="tel"
                     placeholder="9841000000"
                     value={formPhone}
                     onChange={(e) => setFormPhone(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-[#fbfdfc] border border-[#c8eedc] rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-[#167a68]"
                   />
                 </div>
               </div>
 
               {/* Role Selection */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Staff Role & Authority
                 </label>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setFormRole('hospital_staff')}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      formRole === 'hospital_staff'
-                        ? 'bg-emerald-950/40 border-emerald-500 ring-1 ring-emerald-500 text-white'
-                        : 'bg-slate-800/80 border-slate-700 text-slate-400 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="block text-xs font-bold">Hospital Staff</span>
-                    <span className="block text-[10px] text-slate-400 mt-0.5">
-                      Beds, OPD, Ambulance
-                    </span>
-                  </button>
+                {isActingStaff ? (
+                  <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-[#167a68]" />
+                      <span className="text-xs font-bold text-[#0b4d3c]">Hospital Staff</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 mt-1">
+                      As a staff member, you can register and onboard peer Hospital Staff members for this facility.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setFormRole('hospital_staff')}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        formRole === 'hospital_staff'
+                          ? 'bg-emerald-50 border-[#167a68] ring-1 ring-[#167a68] text-[#0b4d3c]'
+                          : 'bg-[#fbfdfc] border-[#c8eedc] text-slate-600 hover:bg-emerald-50/50'
+                      }`}
+                    >
+                      <span className="block text-xs font-bold">Hospital Staff</span>
+                      <span className="block text-[10px] text-slate-500 mt-0.5">
+                        Beds, OPD, Ambulance
+                      </span>
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setFormRole('hospital_admin')}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      formRole === 'hospital_admin'
-                        ? 'bg-indigo-950/40 border-indigo-500 ring-1 ring-indigo-500 text-white'
-                        : 'bg-slate-800/80 border-slate-700 text-slate-400 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="block text-xs font-bold">Hospital Admin</span>
-                    <span className="block text-[10px] text-slate-400 mt-0.5">
-                      Full hospital management
-                    </span>
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormRole('hospital_admin')}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        formRole === 'hospital_admin'
+                          ? 'bg-[#dff5ea] border-[#167a68] ring-1 ring-[#167a68] text-[#0b4d3c]'
+                          : 'bg-[#fbfdfc] border-[#c8eedc] text-slate-600 hover:bg-[#dff5ea]/50'
+                      }`}
+                    >
+                      <span className="block text-xs font-bold">Hospital Admin</span>
+                      <span className="block text-[10px] text-slate-500 mt-0.5">
+                        Full hospital management
+                      </span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 pt-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-950 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-[#167a68] hover:bg-[#116253] text-white text-xs font-semibold shadow-md transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {saving
                     ? 'Saving...'

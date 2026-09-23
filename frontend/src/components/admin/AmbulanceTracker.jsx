@@ -102,7 +102,7 @@ export default function AmbulanceTracker({
       el.innerHTML = `
         <div class="relative flex items-center justify-center p-2 rounded-full ${
           amb.is_available ? 'bg-emerald-600' : 'bg-red-600'
-        } text-white shadow-xl border-2 border-white">
+        } text-slate-900 shadow-xl border-2 border-white">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path>
           </svg>
@@ -184,22 +184,22 @@ export default function AmbulanceTracker({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Map Column (2 spans) */}
-      <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col h-[520px]">
-        <div className="p-4 border-b border-slate-800 bg-slate-950/40 flex items-center justify-between">
+      <div className="lg:col-span-2 bg-white border border-[#c8eedc] rounded-2xl overflow-hidden shadow-xl flex flex-col h-[520px]">
+        <div className="p-4 border-b border-[#c8eedc] bg-[#f0faf5] flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-red-400 animate-pulse" />
-            <span className="text-sm font-bold text-white">Live Fleet GPS Map</span>
+            <span className="text-sm font-bold text-slate-900">Live Fleet GPS Map</span>
           </div>
-          <span className="text-xs text-slate-400">Click map to pin new coordinates</span>
+          <span className="text-xs text-slate-500">Click map to pin new coordinates</span>
         </div>
 
-        <div className="flex-1 relative bg-slate-950">
+        <div className="flex-1 relative bg-[#fbfdfc]">
           {hasValidToken ? (
             <div ref={mapContainerRef} className="w-full h-full" />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-slate-400 space-y-2">
+            <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-slate-500 space-y-2">
               <MapPin className="w-10 h-10 text-red-500/50" />
-              <p className="text-sm font-semibold text-white">GPS Map Canvas</p>
+              <p className="text-sm font-semibold text-slate-900">GPS Map Canvas</p>
               <p className="text-xs max-w-sm">
                 Mapbox token is optional. You can enter or update latitude and longitude manually in the form on the right.
               </p>
@@ -211,8 +211,8 @@ export default function AmbulanceTracker({
       {/* Control Panel / Update Form (1 span) */}
       <div className="space-y-4">
         {/* Ambulance Selector Pills */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
-          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">
+        <div className="bg-white border border-[#c8eedc] rounded-2xl p-4 shadow-xl">
+          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">
             Select Ambulance ({ambulances.length})
           </h4>
           <div className="space-y-2">
@@ -224,21 +224,21 @@ export default function AmbulanceTracker({
                   onClick={() => handleSelectAmbulance(amb)}
                   className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between ${
                     isSelected
-                      ? 'bg-emerald-950/40 border-emerald-500 text-white shadow-md'
-                      : 'bg-slate-950/40 border-slate-800 text-slate-300 hover:border-slate-700'
+                      ? 'bg-[#dff5ea] border-[#167a68] text-[#0b4d3c] shadow-xs'
+                      : 'bg-[#f0faf5] border-[#c8eedc] text-slate-600 hover:border-[#167a68]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
                     <div
                       className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        amb.is_available ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                        amb.is_available ? 'bg-[#dff5ea] text-[#167a68]' : 'bg-red-50 text-red-600'
                       }`}
                     >
                       <Truck className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="font-bold text-xs text-white">{amb.vehicle_number || `Unit #${amb.id}`}</p>
-                      <p className="text-[11px] text-slate-400">{amb.driver_name || 'Driver'}</p>
+                      <p className="font-bold text-xs text-slate-900">{amb.vehicle_number || `Unit #${amb.id}`}</p>
+                      <p className="text-[11px] text-slate-500">{amb.driver_name || 'Driver'}</p>
                     </div>
                   </div>
 
@@ -246,8 +246,8 @@ export default function AmbulanceTracker({
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         amb.is_available
-                          ? 'bg-emerald-500/20 text-emerald-300'
-                          : 'bg-red-500/20 text-red-300'
+                          ? 'bg-[#dff5ea] text-[#167a68] border border-[#c8eedc]'
+                          : 'bg-red-50 text-red-600 border border-red-200'
                       }`}
                     >
                       {amb.is_available ? 'Available' : 'Busy'}
@@ -259,7 +259,7 @@ export default function AmbulanceTracker({
                           e.stopPropagation();
                           onDeleteAmbulance(amb.id, amb.vehicle_number);
                         }}
-                        className="p-1 rounded-lg hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors"
+                        className="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
                         title="Remove from fleet"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -276,17 +276,17 @@ export default function AmbulanceTracker({
         {selectedAmbulance && (
           <form
             onSubmit={handleSubmit}
-            className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4"
+            className="bg-white border border-[#c8eedc] rounded-2xl p-5 shadow-xl space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-[#c8eedc] pb-3">
               <div>
-                <h4 className="text-sm font-bold text-white">Update Location & Status</h4>
-                <p className="text-xs text-slate-400">{selectedAmbulance.vehicle_number}</p>
+                <h4 className="text-sm font-bold text-slate-900">Update Location & Status</h4>
+                <p className="text-xs text-slate-500">{selectedAmbulance.vehicle_number}</p>
               </div>
               <button
                 type="button"
                 onClick={handleUseDeviceLocation}
-                className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-950/40 px-2.5 py-1 rounded-lg border border-emerald-800/40"
+                className="text-[11px] font-semibold text-[#167a68] hover:text-[#0b4d3c] flex items-center gap-1 bg-[#dff5ea] hover:bg-[#c8eedc] px-2.5 py-1 rounded-lg border border-[#c8eedc] transition-colors cursor-pointer"
               >
                 <Crosshair className="w-3 h-3" />
                 My GPS
@@ -295,33 +295,33 @@ export default function AmbulanceTracker({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">Latitude</label>
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">Latitude</label>
                 <input
                   type="number"
                   step="any"
                   required
                   value={formData.latitude}
                   onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#fbfdfc] border border-[#c8eedc] rounded-xl px-3 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">Longitude</label>
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">Longitude</label>
                 <input
                   type="number"
                   step="any"
                   required
                   value={formData.longitude}
                   onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#fbfdfc] border border-[#c8eedc] rounded-xl px-3 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:border-emerald-500"
                 />
               </div>
             </div>
 
             {/* Status Toggles */}
             <div className="space-y-2 pt-1">
-              <label className="flex items-center gap-3 p-2.5 bg-slate-950/60 rounded-xl border border-slate-800 cursor-pointer">
+              <label className="flex items-center gap-3 p-2.5 bg-[#fbfdfc] rounded-xl border border-[#c8eedc] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.is_available}
@@ -332,15 +332,15 @@ export default function AmbulanceTracker({
                       is_on_call: e.target.checked ? false : formData.is_on_call,
                     })
                   }
-                  className="w-4 h-4 text-emerald-600 rounded bg-slate-900 border-slate-700 focus:ring-emerald-500"
+                  className="w-4 h-4 text-emerald-600 rounded bg-white border-[#c8eedc] focus:ring-emerald-500"
                 />
                 <div>
-                  <p className="text-xs font-bold text-white">Ambulance Available</p>
-                  <p className="text-[10px] text-slate-400">Ready for emergency dispatch</p>
+                  <p className="text-xs font-bold text-slate-900">Ambulance Available</p>
+                  <p className="text-[10px] text-slate-500">Ready for emergency dispatch</p>
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-2.5 bg-slate-950/60 rounded-xl border border-slate-800 cursor-pointer">
+              <label className="flex items-center gap-3 p-2.5 bg-[#fbfdfc] rounded-xl border border-[#c8eedc] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.is_on_call}
@@ -351,11 +351,11 @@ export default function AmbulanceTracker({
                       is_available: e.target.checked ? false : formData.is_available,
                     })
                   }
-                  className="w-4 h-4 text-red-600 rounded bg-slate-900 border-slate-700 focus:ring-red-500"
+                  className="w-4 h-4 text-red-600 rounded bg-white border-[#c8eedc] focus:ring-red-500"
                 />
                 <div>
-                  <p className="text-xs font-bold text-white">Currently On Active Call</p>
-                  <p className="text-[10px] text-slate-400">En route to emergency patient</p>
+                  <p className="text-xs font-bold text-slate-900">Currently On Active Call</p>
+                  <p className="text-[10px] text-slate-500">En route to emergency patient</p>
                 </div>
               </label>
             </div>
@@ -363,7 +363,7 @@ export default function AmbulanceTracker({
             <button
               type="submit"
               disabled={isUpdating}
-              className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/60 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full py-2.5 px-4 rounded-xl bg-[#167a68] hover:bg-[#116253] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer disabled:opacity-50"
             >
               {isUpdating ? (
                 <>

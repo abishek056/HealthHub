@@ -68,14 +68,14 @@ const getDepartmentIcon = (deptName = '') => {
   }
   if (name.includes('gyne') || name.includes('maternity')) {
     return (
-      <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-5 h-5 text-[#167a68]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
       </svg>
     );
   }
   if (name.includes('surg')) {
     return (
-      <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879a3 3 0 11-4.242-4.242L10.758 10.758m0 0l2.879-2.879a3 3 0 114.242 4.242L14.121 14.121z" />
       </svg>
     );
@@ -212,51 +212,51 @@ const OPDQueue = ({
   };
 
   return (
-    <div className={`bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden font-sans ${className}`}>
+    <div className={`bg-white rounded-3xl shadow-sm border border-[#c8eedc] overflow-hidden font-sans ${className}`}>
       {/* ─── Header ─── */}
-      <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 via-white to-sky-50/30">
+      <div className="p-6 border-b border-[#e8f7f0] bg-gradient-to-r from-[#f7fcf9] via-white to-[#f0fbf5]">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-[#dff5ea] text-[#167a68] flex items-center justify-center">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="font-serif text-xl font-bold text-[#0b4d3c]">
                 OPD Live Queue & Token Booking
               </h2>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               {hospitalName} · Real-time queue counters with automatic SMS confirmation
             </p>
           </div>
 
           {/* Live Indicator & Refresh */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-xs">
+            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-[#c8eedc] shadow-xs">
               <span
                 className={`w-2.5 h-2.5 rounded-full ${
-                  isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'
+                  isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'
                 }`}
               />
               <span
                 className={`text-xs font-semibold ${
-                  isConnected ? 'text-emerald-700' : 'text-gray-500'
+                  isConnected ? 'text-emerald-700' : 'text-slate-500'
                 }`}
               >
                 {isConnected ? 'Live WebSocket' : 'Polling'}
               </span>
             </div>
 
-            <span className="text-xs text-gray-400 hidden sm:inline">
+            <span className="text-xs text-slate-400 hidden sm:inline">
               Updated {getRelativeTime(lastUpdated)}
             </span>
 
             <button
               onClick={handleRefresh}
               title="Refresh queue"
-              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-[#167a68] hover:bg-[#dff5ea] transition-colors cursor-pointer"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -267,54 +267,54 @@ const OPDQueue = ({
 
         {/* ─── Metric Chips ─── */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-5">
-          <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <div className="bg-white rounded-2xl p-3 border border-[#c8eedc] shadow-xs flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#dff5ea] text-[#167a68] flex items-center justify-center shrink-0">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
             <div>
-              <span className="text-[11px] text-gray-400 font-medium block">Departments</span>
-              <span className="text-lg font-bold text-gray-900">{queues.length} Active</span>
+              <span className="text-[11px] text-slate-400 font-medium block">Departments</span>
+              <span className="text-lg font-bold text-[#0b4d3c]">{queues.length} Active</span>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+          <div className="bg-white rounded-2xl p-3 border border-[#c8eedc] shadow-xs flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
             <div>
-              <span className="text-[11px] text-gray-400 font-medium block">Total Served / Queue</span>
-              <span className="text-lg font-bold text-gray-900">{totalWaiting} Tokens</span>
+              <span className="text-[11px] text-slate-400 font-medium block">Total Served / Queue</span>
+              <span className="text-lg font-bold text-[#0b4d3c]">{totalWaiting} Tokens</span>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-xs flex items-center gap-3 col-span-2 sm:col-span-1">
+          <div className="bg-white rounded-2xl p-3 border border-[#c8eedc] shadow-xs flex items-center gap-3 col-span-2 sm:col-span-1">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div>
-              <span className="text-[11px] text-gray-400 font-medium block">Avg. Wait Time</span>
-              <span className="text-lg font-bold text-gray-900">~{avgWait} mins</span>
+              <span className="text-[11px] text-slate-400 font-medium block">Avg. Wait Time</span>
+              <span className="text-lg font-bold text-[#0b4d3c]">~{avgWait} mins</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* ─── Search and Filters Bar ─── */}
-      <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row gap-3 items-center justify-between bg-gray-50/40">
+      <div className="p-5 border-b border-[#e8f7f0] flex flex-col sm:flex-row gap-3 items-center justify-between bg-[#f7fcf9]/60">
         <div className="relative w-full sm:w-72">
-          <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-emerald-600 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             type="text"
             placeholder="Search department..."
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+            className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-[#c8eedc] bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-[#167a68] transition"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -322,15 +322,15 @@ const OPDQueue = ({
 
         {/* Crowd Filter Pills */}
         <div className="flex items-center gap-1.5 self-start sm:self-auto overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-          <span className="text-xs text-gray-400 font-medium mr-1 hidden md:inline">Filter:</span>
+          <span className="text-xs text-slate-400 font-medium mr-1 hidden md:inline">Filter:</span>
           {['all', 'low', 'medium', 'high'].map((level) => (
             <button
               key={level}
               onClick={() => setSelectedCrowd(level)}
-              className={`text-xs px-3 py-1.5 rounded-full font-medium transition cursor-pointer shrink-0 ${
+              className={`text-xs px-3 py-1.5 rounded-full font-bold transition cursor-pointer shrink-0 ${
                 selectedCrowd === level
-                  ? 'bg-primary-600 text-white shadow-xs'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                  ? 'bg-[#167a68] text-white shadow-xs'
+                  : 'bg-white text-slate-600 border border-[#c8eedc] hover:bg-[#f0fbf5]'
               }`}
             >
               {level === 'all' ? 'All Wards' : level.charAt(0).toUpperCase() + level.slice(1)}
@@ -344,7 +344,7 @@ const OPDQueue = ({
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-44 bg-gray-100 rounded-2xl animate-pulse" />
+              <div key={i} className="h-44 bg-[#dff5ea]/60 rounded-2xl animate-pulse border border-[#c8eedc]" />
             ))}
           </div>
         ) : filteredQueues.length > 0 ? (
@@ -356,16 +356,16 @@ const OPDQueue = ({
               return (
                 <div
                   key={queue.id || queue.department}
-                  className={`group rounded-2xl border border-gray-200 p-5 bg-white shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between ${crowd.cardBorder}`}
+                  className={`group rounded-2xl border border-[#c8eedc] p-5 bg-white shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between ${crowd.cardBorder}`}
                 >
                   <div>
                     {/* Header */}
                     <div className="flex items-start justify-between gap-2 mb-3">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-primary-50 transition-colors">
+                        <div className="w-9 h-9 rounded-xl bg-[#f0fbf5] border border-[#c8eedc] flex items-center justify-center shrink-0 group-hover:bg-[#dff5ea] transition-colors">
                           {getDepartmentIcon(queue.department)}
                         </div>
-                        <h3 className="font-bold text-gray-900 text-base truncate">
+                        <h3 className="font-bold text-[#0b4d3c] text-base truncate">
                           {queue.department}
                         </h3>
                       </div>
@@ -378,24 +378,24 @@ const OPDQueue = ({
                     </div>
 
                     {/* Token Number & Wait Time Display */}
-                    <div className="bg-gray-50/70 rounded-xl p-3 border border-gray-100 flex items-center justify-between mb-4">
+                    <div className="bg-[#f0fbf5] rounded-xl p-3 border border-[#c8eedc] flex items-center justify-between mb-4">
                       <div>
-                        <span className="text-[11px] uppercase tracking-wider text-gray-400 font-semibold block">
+                        <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold block">
                           Current Token
                         </span>
                         <div className="flex items-baseline gap-1 mt-0.5">
-                          <span className="text-3xl font-black text-gray-900 tracking-tight">
+                          <span className="text-3xl font-black text-[#0b4d3c] tracking-tight">
                             #{queue.current_token || 0}
                           </span>
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <span className="text-[11px] uppercase tracking-wider text-gray-400 font-semibold block">
+                        <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold block">
                           Est. Wait Time
                         </span>
-                        <div className="flex items-center gap-1 text-sm font-bold text-gray-700 mt-1 justify-end">
-                          <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="flex items-center gap-1 text-sm font-bold text-slate-700 mt-1 justify-end">
+                          <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           <span>~{waitMins} mins</span>
@@ -407,7 +407,7 @@ const OPDQueue = ({
                   {/* Book Token Button */}
                   <button
                     onClick={() => setBookingDepartment(queue.department)}
-                    className="w-full mt-2 py-2.5 px-4 rounded-xl bg-primary-600 hover:bg-primary-700 active:scale-98 text-white font-semibold text-xs transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full mt-2 py-2.5 px-4 rounded-xl bg-[#167a68] hover:bg-[#116253] active:scale-98 text-white font-semibold text-xs transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -420,19 +420,19 @@ const OPDQueue = ({
           </div>
         ) : (
           <div className="text-center py-16">
-            <div className="w-14 h-14 mx-auto rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-3">
+            <div className="w-14 h-14 mx-auto rounded-full bg-[#dff5ea] flex items-center justify-center text-[#167a68] mb-3">
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h4 className="text-base font-bold text-gray-800">No departments match your search</h4>
-            <p className="text-xs text-gray-500 mt-1">Try resetting the crowd filter or searching for another clinic.</p>
+            <h4 className="font-serif text-base font-bold text-[#0b4d3c]">No departments match your search</h4>
+            <p className="text-xs text-slate-500 mt-1">Try resetting the crowd filter or searching for another clinic.</p>
             <button
               onClick={() => {
                 setSearchQuery('');
                 setSelectedCrowd('all');
               }}
-              className="mt-4 px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-gray-700 transition"
+              className="mt-4 px-4 py-2 rounded-xl bg-[#dff5ea] hover:bg-[#c8e9d9] text-xs font-semibold text-[#0b4d3c] border border-[#c2ebd5] transition"
             >
               Reset Filters
             </button>
