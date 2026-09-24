@@ -23,7 +23,7 @@ class UpdatePatientRecordRequest extends FormRequest
     {
         return [
             'patient_name' => ['sometimes', 'required', 'string', 'min:2', 'max:150'],
-            'age'          => ['sometimes', 'required', 'integer', 'min:0', 'max:130'],
+            'age'          => ['sometimes', 'required', 'integer', 'min:0', 'max:100'],
             'gender'       => ['sometimes', 'required', 'string', 'in:male,female,other'],
             'phone'        => ['nullable', 'string', 'max:20'],
             'diagnosis'    => ['nullable', 'string'],
@@ -44,7 +44,7 @@ class UpdatePatientRecordRequest extends FormRequest
             'age.required'          => 'Age cannot be empty when provided.',
             'age.integer'           => 'Age must be a valid whole number.',
             'age.min'               => 'Age cannot be negative.',
-            'age.max'               => 'Age must not exceed 130 years.',
+            'age.max'               => 'Age must not exceed 100 years.',
             'gender.required'       => 'Gender cannot be empty when provided.',
             'gender.in'             => 'Gender must be one of: male, female, or other.',
         ];

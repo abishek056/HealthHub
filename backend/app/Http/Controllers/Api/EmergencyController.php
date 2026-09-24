@@ -45,7 +45,6 @@ class EmergencyController extends Controller
         $lon            = (float) $validated['longitude'];
         $bloodGroup     = $validated['blood_group'] ?? null;
         $radius         = (float) ($validated['radius'] ?? 10);
-        $bloodGroupNote = null;
 
         // ── 1. Find all hospitals within radius ────────────────────────────
         $hospitals = $this->emergencyService->findHospitalsNearby($lat, $lon, $radius, $bloodGroup);
@@ -76,9 +75,6 @@ class EmergencyController extends Controller
 
             if ($withBlood->isNotEmpty()) {
                 $hospitals = $withBlood->concat($withoutBlood)->values();
-                $bloodGroupNote = "Found {$withBlood->count()} hospital(s) with {$bloodGroup} blood in stock (shown first).";
-            } else {
-                $bloodGroupNote = "No hospitals with {$bloodGroup} blood currently in stock. Showing nearest emergency facilities.";
             }
         }
 
@@ -96,6 +92,29 @@ class EmergencyController extends Controller
             $primary = $withIcu->first()
                 ?? $withAnyBed->first()
                 ?? $hospitals->first();
+        }
+
+        // ── Build blood_hospitals list: all hospitals with blood, sorted nearest LAST ──
+        $bloodHospitals = collect();
+        if ($bloodGroup && $withBlood->isNotEmpty()) {
+            // Sort by distance descending so nearest is at the end
+            $bloodHospitals = $withBlood
+                ->sortByDesc('distance_km')
+                ->values()
+                ->map(fn ($h) => [
+                    'id'                       => $h['id'],
+                    'name'                     => $h['name'],
+                    'address'                  => $h['address'],
+                    'phone'                    => $h['phone'],
+                    'distance_km'              => $h['distance_km'],
+                    'icu_beds_available'       => $h['icu_beds_available'],
+                    'emergency_beds_available' => $h['emergency_beds_available'],
+                    'has_blood_group'          => $h['has_blood_group'] ?? false,
+                    'google_maps_url'          => $h['google_maps_url'] ?? null,
+                    'latitude'                 => $h['latitude'],
+                    'longitude'                => $h['longitude'],
+                ])
+                ->values();
         }
 
         // ── 4. Build alternatives list (exclude the primary) ──────────────
@@ -131,9 +150,9 @@ class EmergencyController extends Controller
                 ]),
                 'ambulance_contact'     => '102',
                 'alternative_hospitals' => $alternatives,
+                'blood_hospitals'       => $bloodHospitals,
                 'search_radius_km'      => $radius,
                 'total_found'           => $hospitals->count(),
-                'blood_group_note'      => $bloodGroupNote,
             ],
         ]);
     }

@@ -122,6 +122,27 @@ Route::middleware('auth:sanctum')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Patient Profile — Unified Medical Records (across ALL hospitals)
+|--------------------------------------------------------------------------
+|
+| GET /api/my-medical-records
+|   Returns every patient record ever created for the logged-in patient,
+|   from every hospital they have visited — not scoped to one tenant,
+|   because these records belong to the patient, not to a hospital.
+|
+| GET /api/my-medical-records/{id}
+|   Full detail of a single record from that list; ownership of the
+|   record is checked in the controller. Kept on its own path (rather
+|   than reusing /patient-records/{id}) so it never collides with the
+|   hospital-staff tenant-isolated route of the same shape below.
+*/
+Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {
+    Route::get('/my-medical-records', [PatientRecordController::class, 'myRecords']);
+    Route::get('/my-medical-records/{id}', [PatientRecordController::class, 'show']);
+});
+
+/*
+|--------------------------------------------------------------------------
 | Protected routes (hospital_staff only + tenant isolation)
 |--------------------------------------------------------------------------
 |
@@ -168,13 +189,17 @@ Route::middleware(['auth:sanctum', 'role:hospital_staff,hospital_admin,super_adm
         Route::put('/patient-records/{id}', [PatientRecordController::class, 'update']);
         Route::delete('/patient-records/{id}', [PatientRecordController::class, 'destroy']);
 
-        // Hospital Staff Management (hospital_admin & super_admin only)
+        // Hospital Staff Management (hospital_admin & super_admin ONLY — staff cannot manage other staff)
         Route::middleware('role:hospital_admin,super_admin')->group(function () {
             Route::get('/hospitals/{id}/staff', [HospitalStaffController::class, 'index']);
             Route::post('/hospitals/{id}/staff', [HospitalStaffController::class, 'store']);
             Route::put('/hospitals/{id}/staff/{userId}', [HospitalStaffController::class, 'update']);
             Route::delete('/hospitals/{id}/staff/{userId}', [HospitalStaffController::class, 'destroy']);
         });
+
+        // Register Patient directly from hospital portal (hospital_staff & hospital_admin)
+        // Used for patients who find it difficult to self-register online
+        Route::post('/hospital/register-patient', [AuthController::class, 'registerPatientByStaff']);
     });
 
 /*

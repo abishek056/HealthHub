@@ -23,12 +23,13 @@ class StorePatientRecordRequest extends FormRequest
     {
         return [
             'patient_name' => ['required', 'string', 'min:2', 'max:150'],
-            'age'          => ['required', 'integer', 'min:0', 'max:130'],
+            'age'          => ['required', 'integer', 'min:0', 'max:100'],
             'gender'       => ['required', 'string', 'in:male,female,other'],
             'phone'        => ['nullable', 'string', 'max:20'],
-            'diagnosis'    => ['nullable', 'string'],
-            'treatment'    => ['nullable', 'string'],
-            'hospital_id'  => ['nullable', 'integer', 'exists:hospitals,id'],
+            'diagnosis'      => ['nullable', 'string'],
+            'treatment'      => ['nullable', 'string'],
+            'hospital_id'    => ['nullable', 'integer', 'exists:hospitals,id'],
+            'appointment_id' => ['nullable', 'integer', 'exists:appointments,id'],
         ];
     }
 
@@ -45,7 +46,7 @@ class StorePatientRecordRequest extends FormRequest
             'age.required'          => 'Patient age is required.',
             'age.integer'           => 'Age must be a valid whole number.',
             'age.min'               => 'Age cannot be negative.',
-            'age.max'               => 'Age must not exceed 130 years.',
+            'age.max'               => 'Age must not exceed 100 years.',
             'gender.required'       => 'Gender is required.',
             'gender.in'             => 'Gender must be one of: male, female, or other.',
             'hospital_id.exists'    => 'The specified hospital does not exist.',

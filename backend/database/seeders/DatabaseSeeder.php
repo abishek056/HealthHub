@@ -17,12 +17,20 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Super Admin
+        // 1. Super Admin & Demo Patient
         User::factory()->superAdmin()->create([
             'name' => 'Super Admin',
             'email' => 'admin@healthhub.com',
             'password' => Hash::make('password'),
             'phone' => '9800000001',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Demo Patient',
+            'email' => 'patient@healthhub.com',
+            'password' => Hash::make('password'),
+            'role' => 'patient',
+            'phone' => '9800000002',
         ]);
 
         // 2. Hospitals
@@ -104,15 +112,32 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // 7. Blood Banks
-        $bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+        // 7. Blood Banks (Only Bir Hospital and TUTH have blood bank facilities; Patan has none)
+        $bloodStockBir = [
+            'A+' => 18, 'B+' => 22, 'O+' => 30, 'AB+' => 8,
+            'O-' => 4,  'A-' => 3,  'B-' => 0,  'AB-' => 0,
+        ];
+        $bloodStockTUTH = [
+            'O+' => 25, 'A-' => 6,  'B+' => 14, 'AB+' => 10,
+            'A+' => 0,  'O-' => 0,  'B-' => 0,  'AB-' => 0,
+        ];
+
         foreach ($hospitals as $hospital) {
-            foreach ($bloodGroups as $group) {
-                BloodBank::factory()->create([
-                    'hospital_id' => $hospital->id,
-                    'blood_group' => $group,
-                    'units_available' => rand(0, 35),
-                ]);
+            $stockMap = null;
+            if (str_contains($hospital->name, 'Bir')) {
+                $stockMap = $bloodStockBir;
+            } elseif (str_contains($hospital->name, 'Teaching') || str_contains($hospital->name, 'TUTH')) {
+                $stockMap = $bloodStockTUTH;
+            }
+
+            if ($stockMap) {
+                foreach ($stockMap as $group => $units) {
+                    BloodBank::factory()->create([
+                        'hospital_id'     => $hospital->id,
+                        'blood_group'     => $group,
+                        'units_available' => $units,
+                    ]);
+                }
             }
         }
 

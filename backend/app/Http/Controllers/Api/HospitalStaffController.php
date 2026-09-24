@@ -48,6 +48,10 @@ class HospitalStaffController extends Controller
     public function store(int|string $hospitalId, Request $request): JsonResponse
     {
         $hospital = Hospital::findOrFail($hospitalId);
+        $actingUser = $request->user();
+
+        // hospital_staff users can only create other hospital_staff (not hospital_admin)
+        $isActingStaff = $actingUser && $actingUser->role === 'hospital_staff';
 
         $validated = $request->validate([
             'name'     => 'required|string|min:2|max:100',
@@ -57,11 +61,20 @@ class HospitalStaffController extends Controller
             'role'     => 'nullable|in:hospital_staff,hospital_admin',
         ]);
 
+        // Privilege escalation guard: staff cannot create admins
+        $assignedRole = $validated['role'] ?? 'hospital_staff';
+        if ($isActingStaff && $assignedRole === 'hospital_admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden. Hospital staff members can only add other hospital staff, not administrators.',
+            ], 403);
+        }
+
         $staff = User::create([
             'name'        => $validated['name'],
             'email'       => $validated['email'],
             'password'    => Hash::make($validated['password']),
-            'role'        => $validated['role'] ?? 'hospital_staff',
+            'role'        => $assignedRole,
             'hospital_id' => $hospital->id,
             'phone'       => $validated['phone'] ?? null,
         ]);
@@ -87,10 +100,20 @@ class HospitalStaffController extends Controller
     public function update(int|string $hospitalId, int $userId, Request $request): JsonResponse
     {
         $hospital = Hospital::findOrFail($hospitalId);
+        $actingUser = $request->user();
 
         $staff = User::where('hospital_id', $hospital->id)
             ->where('id', $userId)
             ->firstOrFail();
+
+        // hospital_staff cannot edit hospital_admin accounts
+        $isActingStaff = $actingUser && $actingUser->role === 'hospital_staff';
+        if ($isActingStaff && $staff->role === 'hospital_admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden. Hospital staff cannot edit administrator accounts.',
+            ], 403);
+        }
 
         $validated = $request->validate([
             'name'     => 'required|string|min:2|max:100',
@@ -100,11 +123,20 @@ class HospitalStaffController extends Controller
             'role'     => 'nullable|in:hospital_staff,hospital_admin',
         ]);
 
+        // Privilege escalation guard: staff cannot promote anyone to hospital_admin
+        $newRole = $validated['role'] ?? $staff->role;
+        if ($isActingStaff && $newRole === 'hospital_admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden. Hospital staff cannot assign the Hospital Admin role.',
+            ], 403);
+        }
+
         $updateData = [
             'name'  => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? $staff->phone,
-            'role'  => $validated['role'] ?? $staff->role,
+            'role'  => $newRole,
         ];
 
         if (!empty($validated['password'])) {
@@ -134,16 +166,25 @@ class HospitalStaffController extends Controller
     public function destroy(int|string $hospitalId, int $userId, Request $request): JsonResponse
     {
         $hospital = Hospital::findOrFail($hospitalId);
+        $actingUser = $request->user();
 
         $staff = User::where('hospital_id', $hospital->id)
             ->where('id', $userId)
             ->firstOrFail();
 
-        if ($request->user() && $request->user()->id === $staff->id) {
+        if ($actingUser && $actingUser->id === $staff->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'You cannot delete your own account.',
             ], 422);
+        }
+
+        // hospital_staff cannot delete hospital_admin accounts
+        if ($actingUser && $actingUser->role === 'hospital_staff' && $staff->role === 'hospital_admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden. Hospital staff cannot remove administrator accounts.',
+            ], 403);
         }
 
         $staff->delete();

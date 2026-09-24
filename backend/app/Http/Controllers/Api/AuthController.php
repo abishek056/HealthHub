@@ -123,6 +123,49 @@ class AuthController extends Controller
     }
 
     /**
+     * Register a patient account directly from the hospital portal.
+     * For use by hospital_staff and hospital_admin to onboard patients
+     * who are unable to or struggle with self-registration.
+     */
+    public function registerPatientByStaff(Request $request): JsonResponse
+    {
+        $actingUser = $request->user();
+
+        // Only hospital_staff, hospital_admin, or super_admin can use this endpoint
+        if (! in_array($actingUser?->role, ['hospital_staff', 'hospital_admin', 'super_admin'])) {
+            return response()->json([
+                'message' => 'Unauthorized. Only hospital staff or administrators can register patients.',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'phone'    => 'nullable|string|max:25',
+        ]);
+
+        $patient = User::create([
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role'     => 'patient',
+            'phone'    => $validated['phone'] ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Patient account registered successfully.',
+            'user'    => [
+                'id'    => $patient->id,
+                'name'  => $patient->name,
+                'email' => $patient->email,
+                'role'  => $patient->role,
+                'phone' => $patient->phone,
+            ],
+        ], 201);
+    }
+
+    /**
      * Logout - invalidate current token
      */
     public function logout(Request $request): JsonResponse
